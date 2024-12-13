@@ -26,7 +26,6 @@ class WebsocketSubProtocol:
 class JSONSubProtocol(WebsocketSubProtocol):
     def encode(self, data: Any) -> bytes:
         # if isinstance(data, dict):
-        #     data = wrap_fields(data)
 
         data = json.dumps(data, cls=WebSocketJSONEncoder, ensure_ascii=False)
         return data.encode("utf-8")
@@ -314,7 +313,6 @@ class SurrealDBClient(WebsocketClient):
         """
         thing = Thing.new(thing)
         data = data | kwargs if data else kwargs
-        # data = wrap_fields(data)
 
         self.send("create", [thing, data])
         return self.recv_one()
@@ -328,7 +326,6 @@ class SurrealDBClient(WebsocketClient):
         thing = Thing.new(thing)
         data = data if data is not None else {}
         data = data if isinstance(data, list) else [data]
-        # data = [wrap_fields(dd) for dd in data]
 
         self.send("insert", [thing, data])
         return self.recv()
@@ -341,7 +338,6 @@ class SurrealDBClient(WebsocketClient):
     ) -> dict | list[dict]:
         """Insert a new relation record into a specified table or infer the table from the data"""
         data = data | kwargs if data else kwargs
-        # data = wrap_fields(data | kwargs if data else kwargs)
 
         self.send("insert_relation", [table, data])
         return self.recv()
@@ -359,7 +355,6 @@ class SurrealDBClient(WebsocketClient):
             else Thing.new(thing)
         )
         data = data | kwargs if data else kwargs
-        # data = wrap_fields(data | kwargs if data else kwargs)
 
         self.send("update", [thing, data])
         return self.recv()
@@ -377,7 +372,6 @@ class SurrealDBClient(WebsocketClient):
             else Thing.new(thing)
         )
         data = data | kwargs if data else kwargs
-        # data = wrap_fields(data | kwargs if data else kwargs)
 
         self.send("upsert", [thing, data])
         return self.recv()
@@ -402,7 +396,6 @@ class SurrealDBClient(WebsocketClient):
             else Thing.new(record_out)
         )
         data = data | kwargs if data else kwargs
-        # data = wrap_fields(data | kwargs if data else kwargs)
 
         self.send("relate", [record_in, relation, record_out, data])
         return self.recv()
@@ -420,7 +413,6 @@ class SurrealDBClient(WebsocketClient):
             else Thing.new(thing)
         )
         data = data | kwargs if data else kwargs
-        # data = wrap_fields(data | kwargs if data else kwargs)
 
         self.send("merge", [thing, data])
         return self.recv()
@@ -433,7 +425,6 @@ class SurrealDBClient(WebsocketClient):
     ) -> dict | list[dict]:
         """Patch either all records in a table or a single record with specified patches"""
         thing = Thing.new(thing)
-        # patches = [wrap_fields(patch) for patch in patches]
 
         self.send("patch", [thing, patches, diff])
         return self.recv()
