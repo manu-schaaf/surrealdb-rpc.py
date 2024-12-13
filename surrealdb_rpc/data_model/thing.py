@@ -221,11 +221,14 @@ class NumericRecordId(RecordId[int]):
 
 class ObjectRecordId(RecordId[dict]):
     def __pack__(self) -> str:
-        id_str = "{"
-        ",".join(
-            String.auto_escape(k) + ":" + pack_record_id(v) for k, v in self.id.items()
+        id_str = (
+            "{"
+            + ",".join(
+                String.auto_escape(k) + ":" + pack_record_id(v, quote=True)
+                for k, v in self.id.items()
+            )
+            + "}"
         )
-        id_str += "}"
         return f"{self.table}:{id_str}"
 
 
