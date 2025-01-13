@@ -43,7 +43,7 @@ def msgpack_decode(code, data):
             raise ValueError(f"Unknown msgpack extension code: {code}")
 
 
-class WebSocketJSONEncoder(json.JSONEncoder):
+class SurrealJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         match obj:
             case uuid if isinstance(uuid, UUID):

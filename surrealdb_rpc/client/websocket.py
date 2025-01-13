@@ -10,8 +10,8 @@ from websockets.sync.client import ClientConnection, connect
 from websockets.typing import Subprotocol
 
 from surrealdb_rpc.protocol import (
+    SurrealJSONEncoder,
     Thing,
-    WebSocketJSONEncoder,
     msgpack_decode,
     msgpack_encode,
 )
@@ -27,7 +27,7 @@ class JSONSubProtocol(WebsocketSubProtocol):
     def encode(self, data: Any) -> bytes:
         # if isinstance(data, dict):
 
-        data = json.dumps(data, cls=WebSocketJSONEncoder, ensure_ascii=False)
+        data = json.dumps(data, cls=SurrealJSONEncoder, ensure_ascii=False)
         return data.encode("utf-8")
 
     def decode(self, data: bytes) -> Any:
