@@ -6,7 +6,7 @@ from typing import Any, Self
 from ulid import encode_random, ulid
 from uuid_extensions import uuid7str
 
-from .ext_types import UUID, DateTime, Decimal, Duration
+from surrealdb_rpc.data_model.ext_types import UUID, DateTime, Decimal, Duration
 
 
 class String(str):
