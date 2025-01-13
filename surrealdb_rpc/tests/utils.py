@@ -2,7 +2,7 @@ from surrealdb_rpc.client.websocket import SurrealDBClient
 from surrealdb_rpc.data_model import RecordId
 
 
-def _test_create_select_query(port: int, user: str, password: str):
+def _test_base_queries(port: int, user: str, password: str):
     with SurrealDBClient(
         host="localhost",
         port=18000,
@@ -43,3 +43,23 @@ def _test_create_select_query(port: int, user: str, password: str):
         # `SELECT` returns a list of records
         assert len(first_response_result) == 1
         assert first_response_result[0] == response_create
+
+        # Use the insert method to insert multiple records at once
+        connection.insert(
+            "example",
+            [
+                {
+                    "id": 456,  # You can specify an ID as a field ...
+                    "text": "Another value",
+                    "array": [42],
+                    "object": {"foo": "bar"},
+                },
+                {
+                    # ... or omit the ID to generate a random one
+                    "text": "...",
+                    "array": [1337],
+                    "object": {"value": "key"},
+                    "reference": None,  # None is mapped to NULL in the database
+                },
+            ],
+        )

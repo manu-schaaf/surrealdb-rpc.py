@@ -1,7 +1,7 @@
 import subprocess
 
 from surrealdb_rpc.client.websocket import SurrealDBError
-from surrealdb_rpc.tests.utils import _test_create_select_query
+from surrealdb_rpc.tests.utils import _test_base_queries
 
 
 class DockerDB:
@@ -100,7 +100,7 @@ class DockerDB:
 def test_docker_db():
     db = DockerDB().start()
     try:
-        _test_create_select_query(db.port, db.user, db.password)
+        _test_base_queries(db.port, db.user, db.password)
     except SurrealDBError as e:
         db.terminate()
         print(db.stderr())
