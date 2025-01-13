@@ -131,12 +131,12 @@ def test_docker_db():
             assert response_select == response_create
 
             # Run a SurrealQL query
-            response_select = connection.query(
+            response_query = connection.query(
                 'SELECT * FROM example WHERE text = "Some value"'
             )
             # Returns a result for each statement in the query
-            assert len(response_select) == 1
-            first_response = response_select[0]
+            assert len(response_query) == 1
+            first_response = response_query[0]
             # Retrieve actual result with the "result" key
             first_response_result = first_response["result"]
             # `SELECT` returns a list of records
