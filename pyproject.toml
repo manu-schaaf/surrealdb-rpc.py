@@ -1,7 +1,8 @@
 [project]
 name = "surrealdb-rpc"
 version = "0.1.0"
-description = "Add your description here"
+authors = [{ name = "Manuel Schaaf" }]
+description = "A Python library for interacting with SurrealDB via RPC."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -11,6 +12,10 @@ dependencies = [
     "uuid7>=0.1.0",
     "websockets>=14.1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/manu-schaaf/surrealdb-rpc.py"
+Issues = "https://github.com/manu-schaaf/surrealdb-rpc.py/issues"
 
 [dependency-groups]
 dev = ["jupyter>=1.1.1", "pytest>=8.3.4", "python-lsp-server[all]>=1.12.0"]
