@@ -319,15 +319,21 @@ class SurrealDBClient(WebsocketClient):
 
     def insert(
         self,
-        thing: str,
+        table: str,
         data: dict | list[dict] | None = None,
     ) -> dict | list[dict]:
-        """Insert one or multiple records in a table"""
-        thing = Thing.new(thing)
+        """Insert one or multiple records in a table.
+
+        Note:
+            - `table` must be the **table name** given as a `str`.
+        """
+        if isinstance(table, Thing):
+            table = table.table
+
         data = data if data is not None else {}
         data = data if isinstance(data, list) else [data]
 
-        self.send("insert", [thing, data])
+        self.send("insert", [table, data])
         return self.recv()
 
     def insert_relation(
