@@ -7,6 +7,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "msgpack>=1.1.0",
+    "requests>=2.32.3",
     "ulid>=1.1",
     "uuid7>=0.1.0",
     "websockets>=14.1",
