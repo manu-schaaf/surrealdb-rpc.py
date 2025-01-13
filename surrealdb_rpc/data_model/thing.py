@@ -148,6 +148,9 @@ class Table(Thing):
     def __iter__(self):
         yield self.table
 
+    def __eq__(self, other):
+        return self.table == other.table
+
     def __json__(self):
         return self.table
 
@@ -169,6 +172,9 @@ class RecordId[T](Table):
     def __iter__(self):
         yield self.table
         yield self.id
+
+    def __eq__(self, other):
+        return self.table == other.table and self.id == other.id
 
     def __json__(self):
         return f"{self.table}:{json.dumps(self.id)}"
