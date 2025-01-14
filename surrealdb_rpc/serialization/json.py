@@ -2,7 +2,7 @@ import datetime
 import decimal
 import json
 
-from surrealdb_rpc.data_model import UUID, DateTime, Decimal, Duration
+from surrealdb_rpc.data_model.types import UUID, DateTime, Decimal, Duration
 from surrealdb_rpc.serialization.abc import JSONSerializable
 
 

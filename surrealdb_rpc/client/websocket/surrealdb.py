@@ -8,9 +8,9 @@ from surrealdb_rpc.client.interface import (
 )
 from surrealdb_rpc.client.websocket import WebsocketClient
 from surrealdb_rpc.data_model import (
-    SingleOrListOfRecordIds,
-    SingleRecordId,
+    OneOrManyThings,
     SingleTable,
+    SingleThing,
     Thing,
 )
 
@@ -168,7 +168,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
 
     def select(
         self,
-        thing: SingleTable | SingleOrListOfRecordIds,
+        thing: SingleTable | OneOrManyThings,
     ) -> None | dict | list[dict]:
         """Select either all records in a table or a single record.
 
@@ -177,9 +177,9 @@ class SurrealDBWebsocketClient(WebsocketClient):
             dict | list[dict]: The selected record(s)
         """
         thing = (
-            [Thing.new(el) for el in thing]
+            [Thing.from_obj(el) for el in thing]
             if isinstance(thing, list)
-            else Thing.new(thing)
+            else Thing.from_obj(thing)
         )
 
         self.send("select", [thing])
@@ -187,7 +187,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
 
     def create(
         self,
-        thing: SingleTable | SingleRecordId,
+        thing: SingleTable | SingleThing,
         data: dict | None = None,
         **kwargs,
     ) -> dict:
@@ -200,7 +200,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         Returns:
             dict: The created record
         """
-        thing = Thing.new(thing)
+        thing = Thing.from_obj(thing)
         data = data | kwargs if data else kwargs
 
         self.send("create", [thing, data])
@@ -210,7 +210,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         self,
         table: SingleTable,
         data: dict | list[dict] | None = None,
-    ) -> dict | list[dict]:
+    ) -> list[dict]:
         """Insert one or multiple records in a table."""
         data = data if data is not None else {}
         data = data if isinstance(data, list) else [data]
@@ -232,15 +232,15 @@ class SurrealDBWebsocketClient(WebsocketClient):
 
     def update(
         self,
-        thing: SingleTable | SingleOrListOfRecordIds,
+        thing: SingleTable | OneOrManyThings,
         data: dict | None = None,
         **kwargs,
     ) -> dict | list[dict]:
         """Modify either all records in a table or a single record with specified data if the record already exists"""
         thing = (
-            [Thing.new(t) for t in thing]
+            [Thing.from_obj(t) for t in thing]
             if isinstance(thing, list)
-            else Thing.new(thing)
+            else Thing.from_obj(thing)
         )
         data = data | kwargs if data else kwargs
 
@@ -249,15 +249,15 @@ class SurrealDBWebsocketClient(WebsocketClient):
 
     def upsert(
         self,
-        thing: SingleTable | SingleOrListOfRecordIds,
+        thing: SingleTable | OneOrManyThings,
         data: dict | None = None,
         **kwargs,
     ) -> dict | list[dict]:
         """Replace either all records in a table or a single record with specified data"""
         thing = (
-            [Thing.new(t) for t in thing]
+            [Thing.from_obj(t) for t in thing]
             if isinstance(thing, list)
-            else Thing.new(thing)
+            else Thing.from_obj(thing)
         )
         data = data | kwargs if data else kwargs
 
@@ -266,22 +266,22 @@ class SurrealDBWebsocketClient(WebsocketClient):
 
     def relate(
         self,
-        record_in: SingleTable | SingleOrListOfRecordIds,
+        record_in: SingleTable | OneOrManyThings,
         relation: str,
-        record_out: SingleTable | SingleOrListOfRecordIds,
+        record_out: SingleTable | OneOrManyThings,
         data: dict | None = None,
         **kwargs,
     ) -> dict | list[dict]:
         """Create graph relationships between created records"""
         record_in = (
-            [Thing.new(thing) for thing in record_in]
+            [Thing.from_obj(thing) for thing in record_in]
             if isinstance(record_in, list)
-            else Thing.new(record_in)
+            else Thing.from_obj(record_in)
         )
         record_out = (
-            [Thing.new(thing) for thing in record_out]
+            [Thing.from_obj(thing) for thing in record_out]
             if isinstance(record_out, list)
-            else Thing.new(record_out)
+            else Thing.from_obj(record_out)
         )
         data = data | kwargs if data else kwargs
 
@@ -290,15 +290,15 @@ class SurrealDBWebsocketClient(WebsocketClient):
 
     def merge(
         self,
-        thing: SingleTable | SingleOrListOfRecordIds,
+        thing: SingleTable | OneOrManyThings,
         data: dict | None = None,
         **kwargs,
     ) -> dict | list[dict]:
         """Merge specified data into either all records in a table or a single record"""
         thing = (
-            [Thing.new(t) for t in thing]
+            [Thing.from_obj(t) for t in thing]
             if isinstance(thing, list)
-            else Thing.new(thing)
+            else Thing.from_obj(thing)
         )
         data = data | kwargs if data else kwargs
 
@@ -307,22 +307,22 @@ class SurrealDBWebsocketClient(WebsocketClient):
 
     def patch(
         self,
-        thing: SingleTable | SingleOrListOfRecordIds,
+        thing: SingleTable | OneOrManyThings,
         patches: list[dict],
         diff: bool = False,
     ) -> dict | list[dict]:
         """Patch either all records in a table or a single record with specified patches"""
-        thing = Thing.new(thing)
+        thing = Thing.from_obj(thing)
 
         self.send("patch", [thing, patches, diff])
         return self.recv()
 
     def delete(
         self,
-        thing: SingleTable | SingleOrListOfRecordIds,
+        thing: SingleTable | OneOrManyThings,
     ) -> dict | list[dict]:
         """Delete either all records in a table or a single record"""
-        thing = Thing.new(thing)
+        thing = Thing.from_obj(thing)
 
         self.send("delete", [thing])
         return self.recv()

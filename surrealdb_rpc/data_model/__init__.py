@@ -1,26 +1,32 @@
-from .ext_types import UUID, DateTime, Decimal, Duration
-from .thing import (
+from .record_id import (
     ArrayRecordId,
-    EscapedString,
-    ExtTypes,
     NumericRecordId,
     ObjectRecordId,
     RecordId,
-    RecordIdStr,
-    String,
-    SurrealTypes,
-    Table,
-    TableNameStr,
     TextRecordId,
+)
+from .string import (
+    EscapedString,
+    String,
+)
+from .table import (
+    Table,
+)
+from .thing import (
     Thing,
-    is_record_id_str,
-    is_table_name_str,
-    pack_record_id,
+)
+from .types import (
+    UUID,
+    DateTime,
+    Decimal,
+    Duration,
+    ExtTypes,
+    SurrealTypes,
 )
 
-type SingleTable = TableNameStr | Table
-type SingleRecordId = RecordIdStr | RecordId
-type SingleOrListOfRecordIds = SingleTable | list[SingleRecordId]
+type SingleTable = str | Table
+type SingleThing = str | Thing
+type OneOrManyThings = SingleThing | list[SingleThing]
 
 
 __all__ = [
@@ -33,14 +39,12 @@ __all__ = [
     "NumericRecordId",
     "ObjectRecordId",
     "RecordId",
-    "RecordIdStr",
     "SingleOrListOfRecordIds",
-    "SingleRecordId",
+    "SingleThing",
     "SingleTable",
     "String",
     "SurrealTypes",
     "Table",
-    "TableNameStr",
     "TextRecordId",
     "Thing",
     "UUID",
