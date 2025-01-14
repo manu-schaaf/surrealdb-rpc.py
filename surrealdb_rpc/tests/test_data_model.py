@@ -45,7 +45,10 @@ class TestRecordId:
     def test_numeric(self):
         assert RecordId(42).__surql__() == "42"
         assert RecordId.new(42).__surql__() == "42"
-        assert RecordId.new("42").__surql__() == "42"
+        assert RecordId.new("42").__surql__() == "⟨42⟩"
+
+        assert RecordId.parse("42").__surql__() == "42"
+        assert RecordId.parse("⟨42⟩").__surql__() == "⟨42⟩"
 
     def test_array(self):
         assert RecordId(["foo", "bar"]).__surql__() == "['foo', 'bar']"

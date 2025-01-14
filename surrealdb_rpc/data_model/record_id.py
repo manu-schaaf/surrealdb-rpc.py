@@ -41,6 +41,8 @@ class RecordId[T](JSONSerializable, SurrealQLSerializable):
             - `ArrayRecordId`: `list` | `tuple`
             - `ObjectRecordId`: `dict`
 
+            Also note, that this method will *not* coerce a string into `NumericRecordId` if it's numeric, use `parse()` for that instead.
+
         Examples:
             >>> RecordId.new("id")
             TextRecordId(id)
@@ -57,9 +59,9 @@ class RecordId[T](JSONSerializable, SurrealQLSerializable):
             InvalidRecordId: If the `record_id` type is not supported.
         """
         match record_id:
-            case s if isinstance(s, str) and not s.isnumeric():
+            case s if isinstance(s, str):
                 return TextRecordId(s)
-            case i if isinstance(i, (str, int)):
+            case i if isinstance(i, int):
                 return NumericRecordId(i)
             case ll if isinstance(ll, (list, tuple)):
                 return ArrayRecordId(ll)
@@ -157,14 +159,5 @@ class ArrayRecordId(RecordId[list]):
 
 
 class SurrealQLRecordId(RecordId[str]):
-    # def __init__(self, record_id: str):
-    #     if (
-    #         record_id.startswith("⟨")
-    #         and record_id.endswith("⟩")
-    #         and not record_id.endswith("\⟩")
-    #     ):
-    #         record_id = record_id[1:-1]
-    #     super().__init__(record_id)
-
     def __surql__(self) -> str:
         return self.value
