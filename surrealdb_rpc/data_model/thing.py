@@ -1,7 +1,7 @@
 import json
 import warnings
 from abc import ABC, abstractmethod
-from typing import Any, Self
+from typing import Any, Self, TypeGuard
 
 from ulid import encode_random, ulid
 from uuid_extensions import uuid7str
@@ -97,11 +97,45 @@ class EscapedString(String):
         return cls(string)
 
 
+type TableNameStr = str
+type RecordIdStr = str
+
+
+def is_table_name_str(string: str) -> TypeGuard[TableNameStr]:
+    """Table names must be simple strings and can only contain ASCII letters, numbers, and underscores."""
+    return String.is_simple(string)
+
+
+def validate_table_name_str(string: str) -> None:
+    """Check a table name string, raise a ValueError if it is invalid.
+
+    Raises:
+        ValueError: If the table name is invalid.
+    """
+    if not is_table_name_str(string):
+        raise ValueError(
+            "Table names must be simple strings and can only contain"
+            " ASCII letters, numbers, and underscores."
+            f" Got: {string}"
+        )
+
+
+def is_record_id_str(string: str) -> TypeGuard[RecordIdStr]:
+    """Record ID strings must be composed of a table name and a record ID separated by a colon."""
+    match string.split(":", maxsplit=1):
+        case [table, id] if id:
+            return is_table_name_str(table)
+        case _:
+            return False
+
+
 class Thing[R](ABC):
     __reference_class__: type[R]
 
     @classmethod
-    def from_str(cls, s: str, escaped: bool = False) -> "Table | RecordId":
+    def from_str(
+        cls, s: TableNameStr | RecordIdStr, escaped: bool = False
+    ) -> "Table | RecordId":
         if ":" in s:
             table, id = s.split(":", 1)
             if not id:
@@ -133,14 +167,11 @@ class Thing[R](ABC):
 
 
 class Table(Thing):
-    def __init__(self, table: str | Self):
-        self.table = table.table if isinstance(table, type(self)) else table
+    def __init__(self, table: "TableNameStr | Table"):
+        if isinstance(table, Table):
+            table = table.table
 
-    def __post_init__(self):
-        if not String.is_simple(self.table):
-            raise ValueError(
-                f"Table names must be simple strings and can only contain ASCII letters, numbers, and underscores. Got: {self.table}"
-            )
+        self.change_table(table)
 
     def __repr__(self):
         return f"{type(self).__name__}({self.table})"
@@ -157,12 +188,19 @@ class Table(Thing):
     def __pack__(self) -> str:
         return self.table
 
-    def change_table(self, table):
+    def change_table(self, table: TableNameStr):
+        """
+        Change the table name of this object.
+
+        Raises:
+            ValueError: If the table name is invalid.
+        """
+        validate_table_name_str(table)
         self.table = table
 
 
 class RecordId[T](Table):
-    def __init__(self, table: str, id: T):
+    def __init__(self, table: TableNameStr, id: T):
         super().__init__(table)
         self.id: T = id
 
