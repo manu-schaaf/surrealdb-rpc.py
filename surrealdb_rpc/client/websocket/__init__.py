@@ -4,11 +4,15 @@ from surrealdb_rpc.client.websocket.surrealdb import (
     SurrealDBQueryResult,
     SurrealDBWebsocketClient,
 )
+from surrealdb_rpc.client.websocket.surrealdb import (
+    SurrealDBWebsocketClient as SurrealDBClient,
+)
 
 __all__ = [
     "InvalidResponseError",
-    "WebsocketClient",
-    "SurrealDBWebsocketClient",
+    "SurrealDBClient",
     "SurrealDBError",
     "SurrealDBQueryResult",
+    "SurrealDBWebsocketClient",
+    "WebsocketClient",
 ]
