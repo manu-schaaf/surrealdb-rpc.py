@@ -32,20 +32,16 @@ class Thing[T](JSONSerializable, MsgpackSerializable):
         self.record_id: RecordId = id if isinstance(id, RecordId) else RecordId(id)
 
     @classmethod
-    def from_str(cls, string: str, escaped: bool = False) -> Self:
-        """
-        Create a Thing from a string.
-        If `escaped` is set true, any angle-escapes are removed if present.
-        """
+    def parse(cls, string: str) -> Self:
         if ":" not in string:
             raise InvalidThingString(string)
 
         table, record_id = string.split(":", 1)
 
-        return cls(Table(table), RecordId.new(record_id))
+        return cls(Table.parse(table), RecordId.parse(record_id))
 
     @classmethod
-    def from_raw(cls, string: str) -> Self:
+    def from_surql(cls, string: str) -> Self:
         """
         Create a raw Thing from a string.
         """
@@ -72,7 +68,7 @@ class Thing[T](JSONSerializable, MsgpackSerializable):
         else:
             table, record_id = string.split(":", 1)
 
-        return cls(Table(table), RecordId.from_raw(record_id))
+        return cls(Table.parse(table), RecordId.from_surql(record_id))
 
     @classmethod
     def from_obj(cls, obj: Any) -> Self | Table:
@@ -92,7 +88,7 @@ class Thing[T](JSONSerializable, MsgpackSerializable):
             case thingifyable if hasattr(obj, "__thing__") and callable(obj.__thing__):
                 return thingifyable.__thing__()
             case string if isinstance(obj, str):
-                return cls.from_str(string) if ":" in string else Table(string)
+                return cls.parse(string) if ":" in string else Table(string)
             case _:
                 raise CannotCreateThingFromObj(obj)
 

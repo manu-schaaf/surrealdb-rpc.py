@@ -12,7 +12,7 @@ class TestThing:
 
         assert Thing("test", "42").__msgpack__() == "test:⟨42⟩"
 
-        assert Thing.from_str("test:1.0").__msgpack__() == "test:⟨1.0⟩"
+        assert Thing.parse("test:1.0").__msgpack__() == "test:⟨1.0⟩"
 
     def test_numeric(self):
         assert Thing("test", 42).__msgpack__() == "test:42"
@@ -23,13 +23,13 @@ class TestThing:
     def test_object(self):
         assert Thing("test", {"foo": "bar"}).__msgpack__() == "test:{ foo: 'bar' }"
 
-    def test_from_str(self):
-        assert Thing("test", "foo") == Thing.from_str("test:foo")
-        assert Thing("test", "foo-bar") == Thing.from_str("test:foo-bar")
-        assert Thing("test", "foo bar") == Thing.from_str("test:foo bar")
-        assert Thing("test", "1.0") == Thing.from_str("test:1.0")
+    def test_parse(self):
+        assert Thing("test", "foo") == Thing.parse("test:foo")
+        assert Thing("test", "foo-bar") == Thing.parse("test:foo-bar")
+        assert Thing("test", "foo bar") == Thing.parse("test:foo bar")
+        assert Thing("test", "1.0") == Thing.parse("test:1.0")
 
-        assert Thing("test", 42) == Thing.from_str("test:42")
+        assert Thing("test", 42) == Thing.parse("test:42")
 
 
 class TestRecordId:
@@ -61,20 +61,20 @@ class TestRecordId:
             == "{ foo: { bar: 'baz' } }"
         )
 
-    def test_from_raw(self):
-        assert RecordId.from_raw("⟨foo⟩").__msgpack__() == "⟨foo⟩"
-        assert RecordId.from_raw("⟨foo:bar⟩").__msgpack__() == "⟨foo:bar⟩"
-        assert RecordId.from_raw("⟨42⟩").__msgpack__() == "⟨42⟩"
+    def test_from_surql(self):
+        assert RecordId.from_surql("⟨foo⟩").__msgpack__() == "⟨foo⟩"
+        assert RecordId.from_surql("⟨foo:bar⟩").__msgpack__() == "⟨foo:bar⟩"
+        assert RecordId.from_surql("⟨42⟩").__msgpack__() == "⟨42⟩"
 
-        assert RecordId.from_raw("42").__msgpack__() == "42"
+        assert RecordId.from_surql("42").__msgpack__() == "42"
 
-        assert RecordId.from_raw("['foo', 'bar']").__msgpack__() == "['foo', 'bar']"
+        assert RecordId.from_surql("['foo', 'bar']").__msgpack__() == "['foo', 'bar']"
         assert (
-            RecordId.from_raw("['foo', { bar: 'baz' }]").__msgpack__()
+            RecordId.from_surql("['foo', { bar: 'baz' }]").__msgpack__()
             == "['foo', { bar: 'baz' }]"
         )
 
-        assert RecordId.from_raw("{ foo: 'bar' }").__msgpack__() == "{ foo: 'bar' }"
+        assert RecordId.from_surql("{ foo: 'bar' }").__msgpack__() == "{ foo: 'bar' }"
 
 
 class TestTable:

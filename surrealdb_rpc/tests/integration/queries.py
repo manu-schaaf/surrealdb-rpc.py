@@ -91,10 +91,10 @@ class Queries:
 
     def test_complex_strings(self, connection: SurrealDBWebsocketClient):
         response, *_ = connection.insert("complex table name", {"id": "foo"})
-        assert response["id"] == Thing.from_str("complex table name:foo")
+        assert response["id"] == Thing.parse("complex table name:foo")
 
         response = connection.create("test", {"id": "foo-bar"})
-        assert response["id"] == Thing.from_str("test:foo-bar")
+        assert response["id"] == Thing.parse("test:foo-bar")
 
         response = connection.create("test:bar-baz")
         assert response["id"] == Thing("test", "bar-baz")

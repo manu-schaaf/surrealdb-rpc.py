@@ -1,3 +1,5 @@
+from typing import Self
+
 from surrealdb_rpc.data_model.string import String
 from surrealdb_rpc.serialization.abc import JSONSerializable, MsgpackSerializable
 
@@ -9,6 +11,16 @@ class InvalidTableName(ValueError):
 class Table(MsgpackSerializable, JSONSerializable):
     def __init__(self, table: "str | Table"):
         self.name = table.name if isinstance(table, Table) else table
+
+    @classmethod
+    def parse(cls, string: str) -> Self:
+        if (
+            string.startswith("⟨")
+            and string.endswith("⟩")
+            and not string.endswith("\⟩")
+        ):
+            string = string[1:-1]
+        return cls(string)
 
     def __repr__(self):
         return f"{type(self).__name__}({self.name})"

@@ -32,12 +32,12 @@ class RecordId[T](JSONSerializable, MsgpackSerializable):
         record_id: T,
     ) -> "TextRecordId | NumericRecordId | ObjectRecordId | ArrayRecordId":
         """
-        Create a new typed RecordId object. The type is inferred from the `id` argument.
+        Create a new typed RecordId object. The type is inferred from the `record_id` argument.
 
         Note:
             Supported types:
             - `TextRecordId`: `str`
-            - `NumericRecordId`: `int` and numeric strings
+            - `NumericRecordId`: `int`
             - `ArrayRecordId`: `list` | `tuple`
             - `ObjectRecordId`: `dict`
 
@@ -47,7 +47,7 @@ class RecordId[T](JSONSerializable, MsgpackSerializable):
             >>> RecordId.new(123)
             NumericRecordId(123)
             >>> RecordId.new("123")
-            NumericRecordId(123)
+            TextRecordId(123)
             >>> RecordId.new(["hello", "world"])
             ArrayRecordId(['hello', 'world'])
             >>> RecordId.new({'key': 'value'})
@@ -69,11 +69,32 @@ class RecordId[T](JSONSerializable, MsgpackSerializable):
                 raise InvalidRecordIdType(type(record_id))
 
     @classmethod
-    def from_raw(cls, string: str) -> "RawRecordId":
-        """
-        Create a raw RecordId from a string.
-        """
-        return RawRecordId(string)
+    def parse(
+        cls, string: str
+    ) -> "TextRecordId | NumericRecordId | ObjectRecordId | ArrayRecordId":
+        match string:
+            case s if s.isnumeric():
+                return NumericRecordId(int(s))
+            case dd if dd.startswith("{") and dd.endswith("}"):
+                raise NotImplementedError(
+                    "Parsing object record IDs not yet implemented."
+                )
+            case ll if ll.startswith("[") and ll.endswith("]"):
+                raise NotImplementedError(
+                    "Parsing array record IDs not yet implemented."
+                )
+            case _:
+                if (
+                    string.startswith("⟨")
+                    and string.endswith("⟩")
+                    and not string.endswith("\⟩")
+                ):
+                    string = string[1:-1]
+                return TextRecordId(string)
+
+    @classmethod
+    def from_surql(cls, string: str) -> "SurrealQLRecordId":
+        return SurrealQLRecordId(string)
 
     @classmethod
     def rand(cls, table: str | Table) -> "TextRecordId":
@@ -135,7 +156,7 @@ class ArrayRecordId(RecordId[list]):
         return list_to_surql_str(self.value)
 
 
-class RawRecordId(RecordId[str]):
+class SurrealQLRecordId(RecordId[str]):
     # def __init__(self, record_id: str):
     #     if (
     #         record_id.startswith("⟨")

@@ -19,7 +19,7 @@ class Duration(timedelta):
         return string
 
     @classmethod
-    def from_str(cls, string: str) -> Self:
+    def from_surql(cls, string: str) -> Self:
         weeks = 0
         days = 0
         hours = 0
@@ -77,7 +77,7 @@ class Duration(timedelta):
 
     @classmethod
     def __decode__(cls, data: bytes) -> Self:
-        return cls.from_str(data.decode("utf-8"))
+        return cls.from_surql(data.decode("utf-8"))
 
 
 class DateTime(datetime):
@@ -85,22 +85,22 @@ class DateTime(datetime):
         return self.astimezone(timezone.utc).isoformat()
 
     @classmethod
-    def from_str(cls, string: str) -> Self:
+    def from_surql(cls, string: str) -> Self:
         return cls.fromisoformat(string)
 
     @classmethod
     def __decode__(cls, data: bytes) -> Self:
-        return cls.from_str(data.decode("utf-8"))
+        return cls.from_surql(data.decode("utf-8"))
 
 
 class Decimal(_Decimal):
     @classmethod
-    def from_str(cls, string: str) -> Self:
+    def from_surql(cls, string: str) -> Self:
         return cls(string.removesuffix("dec"))
 
     @classmethod
     def __decode__(cls, data: bytes) -> Self:
-        return cls.from_str(data.decode("utf-8"))
+        return cls.from_surql(data.decode("utf-8"))
 
 
 class UUID(str):

@@ -34,12 +34,12 @@ def msgpack_decode(code, data):
         case 2:  # UUID
             return UUID(data.decode("utf-8"))
         case 3:  # Decimal
-            return Decimal.from_str(data.decode("utf-8"))
+            return Decimal.from_surql(data.decode("utf-8"))
         case 4:  # Duration
-            return Duration.from_str(data.decode("utf-8"))
+            return Duration.from_surql(data.decode("utf-8"))
         case 5:  # DateTime
-            return DateTime.from_str(data.decode("utf-8"))
+            return DateTime.from_surql(data.decode("utf-8"))
         case 6:  # SurrealDB record ID
-            return Thing.from_raw(data.decode("utf-8"))
+            return Thing.from_surql(data.decode("utf-8"))
         case _:
             raise ValueError(f"Unknown msgpack extension code: {code}")
