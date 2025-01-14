@@ -1,7 +1,7 @@
 from typing import Any
 
 from surrealdb_rpc.data_model.string import String
-from surrealdb_rpc.serialization.abc import MsgpackSerializable
+from surrealdb_rpc.serialization.abc import SurrealQLSerializable
 
 
 def list_to_surql_str(ll: list) -> str:
@@ -52,7 +52,7 @@ def obj_to_surql_str(value: Any, quote: bool = False) -> None | str:
             return list_to_surql_str(ll)
         case dd if isinstance(dd, dict):
             return dict_to_surql_str(dd)
-        case rid if isinstance(rid, MsgpackSerializable):
-            return rid.__msgpack__()
+        case rid if isinstance(rid, SurrealQLSerializable):
+            return rid.__surql__()
         case _:
             raise NotImplementedError

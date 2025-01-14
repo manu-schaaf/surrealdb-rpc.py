@@ -102,17 +102,17 @@ class Queries:
     def test_object_ids(self, connection: SurrealDBWebsocketClient):
         expected = Thing("test", {"foo": "bar"})
         actual = connection.create("test", {"id": {"foo": "bar"}})["id"]
-        assert actual == expected, f"{expected.__msgpack__()} != {actual.__msgpack__()}"
+        assert actual == expected, f"{expected.__surql__()} != {actual.__surql__()}"
 
         expected = Thing("test", {"foo": {"bar": "baz"}})
         actual = connection.create("test", {"id": {"foo": {"bar": "baz"}}})["id"]
-        assert actual == expected, f"{expected.__msgpack__()} != {actual.__msgpack__()}"
+        assert actual == expected, f"{expected.__surql__()} != {actual.__surql__()}"
 
     def test_list_ids(self, connection: SurrealDBWebsocketClient):
         expected = Thing("test", ["foo", "bar"])
         actual = connection.create("test", {"id": ["foo", "bar"]})["id"]
-        assert expected == actual, f"{expected.__msgpack__()} != {actual.__msgpack__()}"
+        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
 
         expected = Thing("test", ["foo", {"bar": "baz"}])
         actual = connection.create("test", {"id": ["foo", {"bar": "baz"}]})["id"]
-        assert expected == actual, f"{expected.__msgpack__()} != {actual.__msgpack__()}"
+        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"

@@ -4,7 +4,7 @@ import decimal
 import msgpack
 
 from surrealdb_rpc.data_model import UUID, DateTime, Decimal, Duration, Thing
-from surrealdb_rpc.serialization.abc import MsgpackSerializable
+from surrealdb_rpc.serialization.abc import SurrealQLSerializable
 
 
 def msgpack_encode(obj):
@@ -20,9 +20,9 @@ def msgpack_encode(obj):
         case dt if isinstance(dt, (datetime.datetime, DateTime)):
             return msgpack.ExtType(5, DateTime.__str__(dt).encode("utf-8"))
         case thing if isinstance(thing, Thing):
-            return msgpack.ExtType(6, thing.__msgpack__().encode("utf-8"))
-        case s if isinstance(s, MsgpackSerializable):
-            return s.__msgpack__()
+            return msgpack.ExtType(6, thing.__surql__().encode("utf-8"))
+        case s if isinstance(s, SurrealQLSerializable):
+            return s.__surql__()
         case _:
             return obj
 

@@ -9,7 +9,7 @@ from surrealdb_rpc.data_model.surql import (
     list_to_surql_str,
 )
 from surrealdb_rpc.data_model.table import Table
-from surrealdb_rpc.serialization.abc import JSONSerializable, MsgpackSerializable
+from surrealdb_rpc.serialization.abc import JSONSerializable, SurrealQLSerializable
 
 
 class InvalidRecordIdType(ValueError):
@@ -20,7 +20,7 @@ class InvalidRecordIdType(ValueError):
         )
 
 
-class RecordId[T](JSONSerializable, MsgpackSerializable):
+class RecordId[T](JSONSerializable, SurrealQLSerializable):
     def __init__(self, record_id: T):
         self.value: T = (
             record_id.value if isinstance(record_id, RecordId) else record_id
@@ -117,42 +117,42 @@ class RecordId[T](JSONSerializable, MsgpackSerializable):
     def __json__(self):
         return json.dumps(self.value)
 
-    def __msgpack__(self) -> str:
+    def __surql__(self) -> str:
         match self.value:
             case s if isinstance(s, str):
-                return TextRecordId.__msgpack__(self)
+                return TextRecordId.__surql__(self)
             case i if isinstance(i, int):
-                return NumericRecordId.__msgpack__(self)
+                return NumericRecordId.__surql__(self)
             case ll if isinstance(ll, (list, tuple)):
-                return ArrayRecordId.__msgpack__(self)
+                return ArrayRecordId.__surql__(self)
             case dd if isinstance(dd, dict):
-                return ObjectRecordId.__msgpack__(self)
+                return ObjectRecordId.__surql__(self)
             case _:
                 raise NotImplementedError
 
     def __eq__(self, other) -> bool:
-        return isinstance(other, RecordId) and self.__msgpack__() == other.__msgpack__()
+        return isinstance(other, RecordId) and self.__surql__() == other.__surql__()
 
 
 class TextRecordId(RecordId[str]):
-    def __msgpack__(self) -> str:
+    def __surql__(self) -> str:
         if self.value.isnumeric():
             return EscapedString.angle(self.value)
         return String.auto_escape(self.value)
 
 
 class NumericRecordId(RecordId[int]):
-    def __msgpack__(self):
+    def __surql__(self):
         return str(self.value)
 
 
 class ObjectRecordId(RecordId[dict]):
-    def __msgpack__(self) -> str:
+    def __surql__(self) -> str:
         return dict_to_surql_str(self.value)
 
 
 class ArrayRecordId(RecordId[list]):
-    def __msgpack__(self) -> str:
+    def __surql__(self) -> str:
         return list_to_surql_str(self.value)
 
 
@@ -166,5 +166,5 @@ class SurrealQLRecordId(RecordId[str]):
     #         record_id = record_id[1:-1]
     #     super().__init__(record_id)
 
-    def __msgpack__(self) -> str:
+    def __surql__(self) -> str:
         return self.value

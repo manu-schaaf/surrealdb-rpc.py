@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
 
-class MsgpackSerializable(ABC):
+class SurrealQLSerializable(ABC):
     @abstractmethod
-    def __msgpack__(self): ...
+    def __surql__(self): ...
 
 
 class JSONSerializable(ABC):

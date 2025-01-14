@@ -2,7 +2,7 @@ from typing import Any, Self
 
 from surrealdb_rpc.data_model.record_id import RecordId
 from surrealdb_rpc.data_model.table import Table
-from surrealdb_rpc.serialization.abc import JSONSerializable, MsgpackSerializable
+from surrealdb_rpc.serialization.abc import JSONSerializable, SurrealQLSerializable
 
 
 class ThingStringParseError(ValueError):
@@ -24,7 +24,7 @@ class CannotCreateThingFromObj(ValueError):
         )
 
 
-class Thing[T](JSONSerializable, MsgpackSerializable):
+class Thing[T](JSONSerializable, SurrealQLSerializable):
     __reference_class__: type[T]
 
     def __init__(self, table: Table, id: RecordId):
@@ -122,6 +122,6 @@ class Thing[T](JSONSerializable, MsgpackSerializable):
         """Return a JSON-serializable representation of this object."""
         return f"{self.table.__json__()}:{self.record_id.__json__()}"
 
-    def __msgpack__(self) -> str:
+    def __surql__(self) -> str:
         """Return a msgpack-serializable representation of this object."""
-        return f"{self.table.__msgpack__()}:{self.record_id.__msgpack__()}"
+        return f"{self.table.__surql__()}:{self.record_id.__surql__()}"
