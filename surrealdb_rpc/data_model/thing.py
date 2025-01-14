@@ -83,7 +83,7 @@ class EscapedString(String):
                 warnings.warn(
                     f"The string {string} is already angle-escaped, are you sure you want to escape it again?"
                 )
-            return cls(f"⟨{string}⟩")
+            return cls(f"⟨{string.replace('⟩', '\\⟩')}⟩")
         return cls(string)
 
     @classmethod
@@ -93,7 +93,7 @@ class EscapedString(String):
                 warnings.warn(
                     f"The string {string} is already backtick-escaped, are you sure you want to escape it again?"
                 )
-            return cls(f"`{string}`")
+            return cls(f"`{string.replace('`', '\\`')}`")
         return cls(string)
 
 
@@ -101,35 +101,11 @@ type TableNameStr = str
 type RecordIdStr = str
 
 
-def is_table_name_str(string: str) -> TypeGuard[TableNameStr]:
-    """Table names must be simple strings and can only contain ASCII letters, numbers, and underscores."""
-    return String.is_simple(string)
-
-
-class InvalidTableName(ValueError):
-    def __init__(self, string: str):
-        super().__init__(
-            "Table names must be simple strings and can only contain"
-            " ASCII letters, numbers, and underscores."
-            f" Got: {string}"
-        )
-
-
-def validate_table_name_str(string: str) -> None:
-    """Check a table name string, raise a ValueError if it is invalid.
-
-    Raises:
-        ValueError: If the table name is invalid.
-    """
-    if not is_table_name_str(string):
-        raise InvalidTableName(string)
-
-
 def is_record_id_str(string: str) -> TypeGuard[RecordIdStr]:
     """Record ID strings must be composed of a table name and a record ID separated by a colon."""
     match string.split(":", maxsplit=1):
-        case [table, id] if id:
-            return is_table_name_str(table)
+        case [table, id]:
+            return table and id
         case _:
             return False
 
@@ -207,12 +183,9 @@ class Thing[R](ABC):
 class Table(Thing):
     def __init__(self, table: "TableNameStr | Table"):
         if isinstance(table, Table):
-            table = table.table
-        self._set_table(table)
-
-    def _set_table(self, table: str):
-        validate_table_name_str(table)
-        self.table = table
+            self.table = table.table
+        else:
+            self.table = String.auto_escape(table)
 
     def __repr__(self):
         return f"{type(self).__name__}({self.table})"
@@ -233,10 +206,9 @@ class Table(Thing):
         """
         Change the table name of this object.
 
-        Raises:
-            ValueError: If the table name is invalid.
+        Escapes the new table name if necessary.
         """
-        self._set_table(table)
+        self.table = String.auto_escape(table)
 
 
 class RecordId[T](Table):
@@ -255,16 +227,25 @@ class RecordId[T](Table):
         return self.table == other.table and self.id == other.id
 
     def __json__(self):
-        return f"{self.table}:{json.dumps(self.id)}"
+        return f"{String.auto_escape(self.table)}:{json.dumps(self.id)}"
 
     def __pack__(self) -> str:
-        return f"{self.table}:{pack_record_id(self.id)}"
+        return f"{String.auto_escape(self.table)}:{self.__pack_id__()}"
+
+    @abstractmethod
+    def __pack_id__(self) -> str:
+        return str(self.id)
 
     @classmethod
     def from_str(cls, string: RecordIdStr, escaped: bool = False) -> "TextRecordId":
-        """Create a TextRecordId from a string."""
+        """
+        Create a TextRecordId from a string.
+
+        Note:
+            Do not use with complex, escaped strings!
+        """
         match string.split(":", maxsplit=1):
-            case [table, id] if id and is_table_name_str(table):
+            case [table, id]:
                 return RecordId.new(table, EscapedString(id) if escaped else id)
             case _:
                 raise InvalidRecordIdString(string)
@@ -332,8 +313,10 @@ class RecordId[T](Table):
 
 
 class TextRecordId(RecordId[str]):
-    def __init__(self, table: str | Table, id: str):
-        super().__init__(table, String.auto_escape(id))
+    def __pack_id__(self) -> str:
+        if self.id.isnumeric():
+            return EscapedString.angle(self.id)
+        return String.auto_escape(self.id)
 
 
 class NumericRecordId(RecordId[int]):
@@ -341,8 +324,8 @@ class NumericRecordId(RecordId[int]):
 
 
 class ObjectRecordId(RecordId[dict]):
-    def __pack__(self) -> str:
-        id_str = (
+    def __pack_id__(self) -> str:
+        return (
             "{"
             + ",".join(
                 String.auto_escape(k) + ":" + pack_record_id(v, quote=True)
@@ -350,7 +333,6 @@ class ObjectRecordId(RecordId[dict]):
             )
             + "}"
         )
-        return f"{self.table}:{id_str}"
 
 
 class ArrayRecordId(RecordId[list]):
