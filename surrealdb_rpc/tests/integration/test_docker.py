@@ -1,7 +1,10 @@
 import subprocess
 
+import pytest
+
 from surrealdb_rpc.client import SurrealDBError
-from surrealdb_rpc.tests.utils import _test_base_queries
+from surrealdb_rpc.client.websocket import SurrealDBWebsocketClient
+from surrealdb_rpc.tests.integration.queries import Queries
 
 
 class DockerDB:
@@ -97,13 +100,26 @@ class DockerDB:
         self.terminate()
 
 
-def test_docker_db():
+@pytest.fixture(scope="module")
+def connection():
     db = DockerDB().start()
     try:
-        _test_base_queries(db.port, db.user, db.password)
+        with SurrealDBWebsocketClient(
+            host="localhost",
+            port=18000,
+            ns="test",
+            db="test",
+            user="root",
+            password="root",
+        ) as connection:
+            yield connection
     except SurrealDBError as e:
         db.terminate()
         print(db.stderr())
         raise e
     finally:
         db.terminate()
+
+
+class TestWebsocketClient(Queries):
+    pass
