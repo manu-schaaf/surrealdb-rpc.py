@@ -11,7 +11,7 @@ from websockets.typing import Subprotocol
 
 from surrealdb_rpc.client import SingleOrListOfRecordIds, SingleRecordId, SingleTable
 from surrealdb_rpc.data_model import Thing
-from surrealdb_rpc.protocol import (
+from surrealdb_rpc.serialization import (
     SurrealJSONEncoder,
     msgpack_decode,
     msgpack_encode,
