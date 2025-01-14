@@ -232,6 +232,15 @@ class RecordId[T](Table):
         return f"{self.table}:{pack_record_id(self.id)}"
 
     @classmethod
+    def from_str(cls, string: RecordIdStr, escaped: bool = False) -> "TextRecordId":
+        """Create a TextRecordId from a string."""
+        match string.split(":", maxsplit=1):
+            case [table, id] if id and is_table_name_str(table):
+                return RecordId.new(table, EscapedString(id) if escaped else id)
+            case _:
+                raise ValueError(f"Invalid record ID string: {string}")
+
+    @classmethod
     def new(
         cls,
         table: str | Table,
