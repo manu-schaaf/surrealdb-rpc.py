@@ -106,6 +106,15 @@ def is_table_name_str(string: str) -> TypeGuard[TableNameStr]:
     return String.is_simple(string)
 
 
+class InvalidTableName(ValueError):
+    def __init__(self, string: str):
+        super().__init__(
+            "Table names must be simple strings and can only contain"
+            " ASCII letters, numbers, and underscores."
+            f" Got: {string}"
+        )
+
+
 def validate_table_name_str(string: str) -> None:
     """Check a table name string, raise a ValueError if it is invalid.
 
@@ -113,11 +122,7 @@ def validate_table_name_str(string: str) -> None:
         ValueError: If the table name is invalid.
     """
     if not is_table_name_str(string):
-        raise ValueError(
-            "Table names must be simple strings and can only contain"
-            " ASCII letters, numbers, and underscores."
-            f" Got: {string}"
-        )
+        raise InvalidTableName(string)
 
 
 def is_record_id_str(string: str) -> TypeGuard[RecordIdStr]:
@@ -129,6 +134,35 @@ def is_record_id_str(string: str) -> TypeGuard[RecordIdStr]:
             return False
 
 
+class InvalidRecordId(ValueError):
+    pass
+
+
+class InvalidRecordIdString(InvalidRecordId):
+    def __init__(self, string: str):
+        super().__init__(
+            f"Record ID strings must be composed of a table name and a record ID separated by a colon."
+            f" Got: {string}"
+        )
+
+
+def validate_record_id_str(string: str) -> None:
+    """Check a record ID string, raise a ValueError if it is invalid.
+
+    Raises:
+        InvalidRecordId: If the record ID is invalid.
+    """
+    if not is_record_id_str(string):
+        raise InvalidRecordIdString(string)
+
+
+class CannotConvertIntoThing(ValueError):
+    def __init__(self, obj: Any):
+        super().__init__(
+            f"Cannot convert object of type {type(obj).__name__} into a Thing: {str(obj)}"
+        )
+
+
 class Thing[R](ABC):
     __reference_class__: type[R]
 
@@ -137,12 +171,7 @@ class Thing[R](ABC):
         cls, s: TableNameStr | RecordIdStr, escaped: bool = False
     ) -> "Table | RecordId":
         if ":" in s:
-            table, id = s.split(":", 1)
-            if not id:
-                raise ValueError(
-                    f"Expected RecordId as string '{s}' contains a colon, but ID was empty!"
-                )
-            return RecordId.new(table, EscapedString(id) if escaped else id)
+            return RecordId.from_str(s)
         return Table(s)
 
     @classmethod
@@ -154,9 +183,7 @@ class Thing[R](ABC):
         elif isinstance(obj, str):
             return cls.from_str(obj)
         else:
-            raise ValueError(
-                f"Cannot convert object of type {type(obj).__name__} into a Thing: {str(obj)}"
-            )
+            raise CannotConvertIntoThing(obj)
 
     @abstractmethod
     def __iter__(self):
@@ -181,8 +208,11 @@ class Table(Thing):
     def __init__(self, table: "TableNameStr | Table"):
         if isinstance(table, Table):
             table = table.table
+        self._set_table(table)
 
-        self.change_table(table)
+    def _set_table(self, table: str):
+        validate_table_name_str(table)
+        self.table = table
 
     def __repr__(self):
         return f"{type(self).__name__}({self.table})"
@@ -206,8 +236,7 @@ class Table(Thing):
         Raises:
             ValueError: If the table name is invalid.
         """
-        validate_table_name_str(table)
-        self.table = table
+        self._set_table(table)
 
 
 class RecordId[T](Table):
@@ -238,7 +267,7 @@ class RecordId[T](Table):
             case [table, id] if id and is_table_name_str(table):
                 return RecordId.new(table, EscapedString(id) if escaped else id)
             case _:
-                raise ValueError(f"Invalid record ID string: {string}")
+                raise InvalidRecordIdString(string)
 
     @classmethod
     def new(
@@ -267,6 +296,9 @@ class RecordId[T](Table):
             ArrayRecordId(table:['hello', 'world'])
             >>> RecordId.new('table', {'key': 'value'})
             ObjectRecordId(table:{'key': 'value'})
+
+        Raises:
+            InvalidRecordId: If the ID type is not supported.
         """
         match id:
             case s if isinstance(id, str):
@@ -278,7 +310,10 @@ class RecordId[T](Table):
             case dd if isinstance(id, dict):
                 return ObjectRecordId(table, dd)
             case _:
-                raise TypeError(f"Unsupported record ID type: {type(id)}")
+                raise InvalidRecordId(
+                    "Valid record ID types are: str, int, list | tuple, and dict."
+                    f" Got: {type(id)}"
+                )
 
     @classmethod
     def rand(cls, table: str | Table) -> "TextRecordId":
