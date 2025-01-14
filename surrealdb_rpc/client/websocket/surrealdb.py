@@ -63,8 +63,12 @@ class SurrealDBWebsocketClient(WebsocketClient):
 
         if error := response.get("error"):
             match error:
-                case {"code": code, "message": message}:
-                    raise SurrealDBError.with_code(code, message)
+                # BUG: The returned code is always -32000
+                case {
+                    # "code": code,
+                    "message": message
+                }:
+                    raise SurrealDBError(message)
                 case _:
                     raise SurrealDBError(error)
         return response
