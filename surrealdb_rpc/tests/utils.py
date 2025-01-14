@@ -1,4 +1,4 @@
-from surrealdb_rpc.client.websocket import SurrealDBClient
+from surrealdb_rpc.client.websocket.surrealdb import SurrealDBClient
 from surrealdb_rpc.data_model import RecordId
 
 
