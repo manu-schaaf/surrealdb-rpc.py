@@ -22,7 +22,7 @@ def msgpack_encode(obj):
         case thing if isinstance(thing, Thing):
             return msgpack.ExtType(6, thing.__msgpack__().encode("utf-8"))
         case s if isinstance(s, MsgpackSerializable):
-            return s.__msgpack__().encode("utf-8")
+            return s.__msgpack__()
         case _:
             return obj
 
