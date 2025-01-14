@@ -6,7 +6,7 @@ from surrealdb_rpc.data_model import Thing
 
 class Queries:
     def test_base_queries(self, connection: SurrealDBWebsocketClient):
-        example_id = Thing("example", "123")
+        example_id = Thing("example", 123)
         response_create = connection.create(
             # specify Thing as string (will create a TextRecordId)
             "example:123",
@@ -50,7 +50,7 @@ class Queries:
             "example",
             [
                 {
-                    "id": "456",  # You can specify an ID as a field ...
+                    "id": 456,  # You can specify an ID as a field ...
                     "text": "Another value",
                     "array": [42],
                     "object": {"foo": "bar"},
@@ -98,3 +98,21 @@ class Queries:
 
         response = connection.create("test:bar-baz")
         assert response["id"] == Thing("test", "bar-baz")
+
+    def test_object_ids(self, connection: SurrealDBWebsocketClient):
+        expected = Thing("test", {"foo": "bar"})
+        actual = connection.create("test", {"id": {"foo": "bar"}})["id"]
+        assert actual == expected, f"{expected.__msgpack__()} != {actual.__msgpack__()}"
+
+        expected = Thing("test", {"foo": {"bar": "baz"}})
+        actual = connection.create("test", {"id": {"foo": {"bar": "baz"}}})["id"]
+        assert actual == expected, f"{expected.__msgpack__()} != {actual.__msgpack__()}"
+
+    def test_list_ids(self, connection: SurrealDBWebsocketClient):
+        expected = Thing("test", ["foo", "bar"])
+        actual = connection.create("test", {"id": ["foo", "bar"]})["id"]
+        assert expected == actual, f"{expected.__msgpack__()} != {actual.__msgpack__()}"
+
+        expected = Thing("test", ["foo", {"bar": "baz"}])
+        actual = connection.create("test", {"id": ["foo", {"bar": "baz"}]})["id"]
+        assert expected == actual, f"{expected.__msgpack__()} != {actual.__msgpack__()}"
