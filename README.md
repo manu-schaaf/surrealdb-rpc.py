@@ -4,7 +4,7 @@
 
 ```python
 from surrealdb_rpc.client.websocket.surrealdb import SurrealDBClient
-from surrealdb_rpc.data_model import RecordId
+from surrealdb_rpc.data_model import Thing
 
 with SurrealDBClient(
     host="localhost",
@@ -17,7 +17,7 @@ with SurrealDBClient(
     response = db.create(
         "example:123",
         text="Some value",
-        reference=RecordId.new("other", {"foo": {"bar": "baz"}}),
+        reference=Thing("other", {"foo": {"bar": "baz"}}),
         array=[1, 2, 3],
         object={"key": "value"},
     )
