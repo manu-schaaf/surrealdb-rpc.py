@@ -8,8 +8,8 @@ from websockets.protocol import State
 from websockets.sync.client import ClientConnection, connect
 from websockets.typing import Subprotocol
 
-from surrealdb_rpc.serialization import (
-    SurrealJSONEncoder,
+from surrealdb_rpc.serialization.json import SurrealJSONEncoder
+from surrealdb_rpc.serialization.msgpack import (
     msgpack_decode,
     msgpack_encode,
 )
