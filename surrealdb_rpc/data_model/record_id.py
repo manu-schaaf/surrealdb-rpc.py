@@ -27,21 +27,6 @@ class RecordId[T](JSONSerializable, MsgpackSerializable):
         )
 
     @classmethod
-    def from_str(cls, string: str, escaped: bool = False) -> "TextRecordId":
-        """
-        Create a RecordId from a string.
-        If `escaped` is set true, any angle-escapes are removed if present.
-        """
-        if (
-            escaped
-            and string.startswith("⟨")
-            and string.endswith("⟩")
-            and not string.endswith("\⟩")
-        ):
-            string = string[1:-1]
-        return cls.new(string)
-
-    @classmethod
     def new(
         cls,
         record_id: T,
@@ -52,7 +37,7 @@ class RecordId[T](JSONSerializable, MsgpackSerializable):
         Note:
             Supported types:
             - `TextRecordId`: `str`
-            - `NumericRecordId`: `int`
+            - `NumericRecordId`: `int` and numeric strings
             - `ArrayRecordId`: `list` | `tuple`
             - `ObjectRecordId`: `dict`
 
@@ -62,7 +47,7 @@ class RecordId[T](JSONSerializable, MsgpackSerializable):
             >>> RecordId.new(123)
             NumericRecordId(123)
             >>> RecordId.new("123")
-            TextRecordId(123)
+            NumericRecordId(123)
             >>> RecordId.new(["hello", "world"])
             ArrayRecordId(['hello', 'world'])
             >>> RecordId.new({'key': 'value'})
@@ -72,9 +57,9 @@ class RecordId[T](JSONSerializable, MsgpackSerializable):
             InvalidRecordId: If the `record_id` type is not supported.
         """
         match record_id:
-            case s if isinstance(s, str):
+            case s if isinstance(s, str) and not s.isnumeric():
                 return TextRecordId(s)
-            case i if isinstance(i, int):
+            case i if isinstance(i, (str, int)):
                 return NumericRecordId(i)
             case ll if isinstance(ll, (list, tuple)):
                 return ArrayRecordId(ll)
@@ -82,6 +67,13 @@ class RecordId[T](JSONSerializable, MsgpackSerializable):
                 return ObjectRecordId(dd)
             case _:
                 raise InvalidRecordIdType(type(record_id))
+
+    @classmethod
+    def from_raw(cls, string: str) -> "RawRecordId":
+        """
+        Create a raw RecordId from a string.
+        """
+        return RawRecordId(string)
 
     @classmethod
     def rand(cls, table: str | Table) -> "TextRecordId":
@@ -105,10 +97,20 @@ class RecordId[T](JSONSerializable, MsgpackSerializable):
         return json.dumps(self.value)
 
     def __msgpack__(self) -> str:
-        return str(self.id)
+        match self.value:
+            case s if isinstance(s, str):
+                return TextRecordId.__msgpack__(self)
+            case i if isinstance(i, int):
+                return NumericRecordId.__msgpack__(self)
+            case ll if isinstance(ll, (list, tuple)):
+                return ArrayRecordId.__msgpack__(self)
+            case dd if isinstance(dd, dict):
+                return ObjectRecordId.__msgpack__(self)
+            case _:
+                raise NotImplementedError
 
     def __eq__(self, other) -> bool:
-        return isinstance(other, RecordId) and self.value == other.value
+        return isinstance(other, RecordId) and self.__msgpack__() == other.__msgpack__()
 
 
 class TextRecordId(RecordId[str]):
@@ -119,7 +121,8 @@ class TextRecordId(RecordId[str]):
 
 
 class NumericRecordId(RecordId[int]):
-    pass
+    def __msgpack__(self):
+        return str(self.value)
 
 
 class ObjectRecordId(RecordId[dict]):
@@ -130,3 +133,17 @@ class ObjectRecordId(RecordId[dict]):
 class ArrayRecordId(RecordId[list]):
     def __msgpack__(self) -> str:
         return list_to_surql_str(self.value)
+
+
+class RawRecordId(RecordId[str]):
+    # def __init__(self, record_id: str):
+    #     if (
+    #         record_id.startswith("⟨")
+    #         and record_id.endswith("⟩")
+    #         and not record_id.endswith("\⟩")
+    #     ):
+    #         record_id = record_id[1:-1]
+    #     super().__init__(record_id)
+
+    def __msgpack__(self) -> str:
+        return self.value

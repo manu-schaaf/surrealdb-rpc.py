@@ -25,14 +25,14 @@ class String(str):
 
         Examples:
             >>> String.auto_quote("simple_string")
-            '"simple_string"'
+            "'simple_string'"
             >>> String.auto_quote("complex-string")
             '⟨complex-string⟩'
             >>> String.auto_quote("complex-string", use_backtick=True)
             '`complex-string`'
         """
         if cls.is_simple(s):
-            return f'"{s}"'
+            return f"'{s}'"
         return cls.escape_backtick(s) if use_backtick else cls.escape_angle(s)
 
     @classmethod

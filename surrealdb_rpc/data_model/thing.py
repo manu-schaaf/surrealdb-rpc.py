@@ -24,10 +24,12 @@ class CannotCreateThingFromObj(ValueError):
         )
 
 
-class Thing(JSONSerializable, MsgpackSerializable):
+class Thing[T](JSONSerializable, MsgpackSerializable):
+    __reference_class__: type[T]
+
     def __init__(self, table: Table, id: RecordId):
         self.table: Table = table if isinstance(table, Table) else Table(table)
-        self.record_id: RecordId = id if isinstance(id, RecordId) else RecordId.new(id)
+        self.record_id: RecordId = id if isinstance(id, RecordId) else RecordId(id)
 
     @classmethod
     def from_str(cls, string: str, escaped: bool = False) -> Self:
@@ -38,7 +40,19 @@ class Thing(JSONSerializable, MsgpackSerializable):
         if ":" not in string:
             raise InvalidThingString(string)
 
-        if escaped and string.startswith("⟨"):
+        table, record_id = string.split(":", 1)
+
+        return cls(Table(table), RecordId.new(record_id))
+
+    @classmethod
+    def from_raw(cls, string: str) -> Self:
+        """
+        Create a raw Thing from a string.
+        """
+        if ":" not in string:
+            raise InvalidThingString(string)
+
+        if string.startswith("⟨"):
             end = 0
             while end := string.find("⟩", end + 1):
                 if end == -1:
@@ -58,7 +72,7 @@ class Thing(JSONSerializable, MsgpackSerializable):
         else:
             table, record_id = string.split(":", 1)
 
-        return cls(Table(table), RecordId.from_str(record_id, escaped=escaped))
+        return cls(Table(table), RecordId.from_raw(record_id))
 
     @classmethod
     def from_obj(cls, obj: Any) -> Self | Table:

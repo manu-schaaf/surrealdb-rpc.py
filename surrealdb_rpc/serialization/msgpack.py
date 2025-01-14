@@ -40,6 +40,6 @@ def msgpack_decode(code, data):
         case 5:  # DateTime
             return DateTime.from_str(data.decode("utf-8"))
         case 6:  # SurrealDB record ID
-            return Thing.from_str(data.decode("utf-8"), escaped=True)
+            return Thing.from_raw(data.decode("utf-8"))
         case _:
             raise ValueError(f"Unknown msgpack extension code: {code}")
