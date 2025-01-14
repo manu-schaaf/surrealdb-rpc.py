@@ -1,4 +1,4 @@
-from surrealdb_rpc.websocket.interface import (
+from surrealdb_rpc.client.interface import (
     SurrealDBError,
     SurrealDBQueryResult,
 )

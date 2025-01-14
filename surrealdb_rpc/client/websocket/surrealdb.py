@@ -1,13 +1,13 @@
 from requests.auth import _basic_auth_str
 
 from surrealdb_rpc.client.interface import SurrealDBError, SurrealDBQueryResult
+from surrealdb_rpc.client.websocket import InvalidResponseError, WebsocketClient
 from surrealdb_rpc.data_model import (
     SingleOrListOfRecordIds,
     SingleRecordId,
     SingleTable,
     Thing,
 )
-from surrealdb_rpc.websocket import InvalidResponseError, WebsocketClient
 
 
 class SurrealDBWebsocketClient(WebsocketClient):
