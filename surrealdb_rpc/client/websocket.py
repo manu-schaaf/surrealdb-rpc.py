@@ -247,8 +247,9 @@ class SurrealDBClient(WebsocketClient):
         return result
 
     def recv_query(self) -> list[SurrealDBQueryResult]:
-        """Receive a list of results from the websocket connection
-        Used for `query`.
+        """
+        Receive a list of results from the websocket connection.
+        Used internally for the `query` method.
 
         Raises:
             InvalidResponseError: If the response is not a list of results
@@ -269,26 +270,32 @@ class SurrealDBClient(WebsocketClient):
         return
 
     def let(self, name: str, value: str):
-        """Define a variable on the current connection"""
+        """Define a variable on the current connection."""
         self.send("let", [name, value])
         self._recv()
         self.variables.add(name)
         return
 
     def unset(self, name: str):
-        """Remove a variable from the current connection"""
+        """Remove a variable from the current connection."""
         self.send("unset", [name])
         self._recv()
         self.variables.remove(name)
         return
 
     def unset_all(self):
-        """Remove all variables from the current connection"""
+        """Remove all variables from the current connection."""
         for variable in self.variables:
             self.unset(variable)
             self.variables.remove(variable)
 
     def query(self, sql: str, **vars) -> list[SurrealDBQueryResult]:
+        """
+        Execute a custom query with optional variables.
+
+        Note:
+            Returns a **list of results**, one for each Statement in the query.
+        """
         params = [sql] if not vars else [sql, vars]
         self.send("query", params)
         return self.recv_query()
@@ -305,6 +312,7 @@ class SurrealDBClient(WebsocketClient):
         self,
         thing: SingleTable | SingleOrListOfRecordIds,
     ) -> dict | list[dict]:
+        """Select either all records in a table or a single record."""
 
         self.send("select", [thing])
         return self.recv()
@@ -315,7 +323,7 @@ class SurrealDBClient(WebsocketClient):
         data: dict | None = None,
         **kwargs,
     ) -> dict:
-        """Create a record with a random or specified ID in a table
+        """Create a record with a random or specified ID in a table.
 
         Args:
             thing: The table or record ID to create

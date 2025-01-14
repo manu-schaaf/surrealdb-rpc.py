@@ -159,11 +159,22 @@ class Thing[R](ABC):
             )
 
     @abstractmethod
-    def __iter__(self): ...
+    def __iter__(self):
+        """
+        Return an iterator over the components of this object.
+        Used to unpack Thing-subclasses into their components.
+        """
+        ...
+
     @abstractmethod
-    def __json__(self) -> str: ...
+    def __json__(self) -> str:
+        """Return a JSON-serializable representation of this object."""
+        ...
+
     @abstractmethod
-    def __pack__(self) -> str: ...
+    def __pack__(self) -> str:
+        """Return a msgpack-serializable representation of this object."""
+        ...
 
 
 class Table(Thing):
@@ -226,6 +237,28 @@ class RecordId[T](Table):
         table: str | Table,
         id: T,
     ) -> "TextRecordId | NumericRecordId | ObjectRecordId | ArrayRecordId":
+        """
+        Create a new typed RecordId object. The type is inferred from the `id` argument.
+
+        Note:
+            Supported types:
+            - `TextRecordId`: `str`
+            - `NumericRecordId`: `int`
+            - `ArrayRecordId`: `list` | `tuple`
+            - `ObjectRecordId`: `dict`
+
+        Examples:
+            >>> RecordId.new("table", "id")
+            TextRecordId(table:id)
+            >>> RecordId.new("table", 123)
+            NumericRecordId(table:123)
+            >>> RecordId.new("table", "123")
+            TextRecordId(table:123)
+            >>> RecordId.new("table", ["hello", "world"])
+            ArrayRecordId(table:['hello', 'world'])
+            >>> RecordId.new('table', {'key': 'value'})
+            ObjectRecordId(table:{'key': 'value'})
+        """
         match id:
             case s if isinstance(id, str):
                 return TextRecordId(table, s)
