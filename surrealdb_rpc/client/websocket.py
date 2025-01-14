@@ -309,13 +309,16 @@ class SurrealDBClient(WebsocketClient):
         *_, result = self.query(sql, **vars)
         return result
 
-        """Select either all records in a table or a single record"""
-        thing = Thing.new(thing)
     def select(
         self,
         thing: SingleTable | SingleOrListOfRecordIds,
     ) -> dict | list[dict]:
         """Select either all records in a table or a single record."""
+        thing = (
+            [Thing.new(el) for el in thing]
+            if isinstance(thing, list)
+            else Thing.new(thing)
+        )
 
         self.send("select", [thing])
         return self.recv()
