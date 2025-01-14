@@ -3,10 +3,10 @@
 ## Example Usage
 
 ```python
-from surrealdb_rpc.client.websocket.surrealdb import SurrealDBClient
+from surrealdb_rpc.client.websocket import SurrealDBWebsocketClient
 from surrealdb_rpc.data_model import Thing
 
-with SurrealDBClient(
+with SurrealDBWebsocketClient(
     host="localhost",
     port=8000,
     ns="test",
