@@ -63,3 +63,7 @@ def _test_base_queries(port: int, user: str, password: str):
                 },
             ],
         )
+
+        response_select = connection.select(["example:123", "example:456"])
+        assert len(response_select) == 2
+        assert response_create in response_select
