@@ -18,6 +18,11 @@ from .thing import (
     pack_record_id,
 )
 
+type SingleTable = TableNameStr | Table
+type SingleRecordId = RecordIdStr | RecordId
+type SingleOrListOfRecordIds = SingleTable | list[SingleRecordId]
+
+
 __all__ = [
     "ArrayRecordId",
     "DateTime",
@@ -29,6 +34,9 @@ __all__ = [
     "ObjectRecordId",
     "RecordId",
     "RecordIdStr",
+    "SingleOrListOfRecordIds",
+    "SingleRecordId",
+    "SingleTable",
     "String",
     "SurrealTypes",
     "Table",
