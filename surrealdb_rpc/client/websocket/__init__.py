@@ -9,22 +9,13 @@ from websockets.protocol import State
 from websockets.sync.client import ClientConnection, connect
 from websockets.typing import Subprotocol
 
-from surrealdb_rpc.data_model import (
-    RecordId,
-    RecordIdStr,
-    Table,
-    TableNameStr,
-    Thing,
-)
+from surrealdb_rpc.client import SingleOrListOfRecordIds, SingleRecordId, SingleTable
+from surrealdb_rpc.data_model import Thing
 from surrealdb_rpc.protocol import (
     SurrealJSONEncoder,
     msgpack_decode,
     msgpack_encode,
 )
-
-type SingleTable = TableNameStr | Table
-type SingleRecordId = RecordIdStr | RecordId
-type SingleOrListOfRecordIds = SingleTable | list[SingleRecordId]
 
 
 class WebsocketSubProtocol:
