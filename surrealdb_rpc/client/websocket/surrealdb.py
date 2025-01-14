@@ -1,7 +1,12 @@
 from requests.auth import _basic_auth_str
 
-from surrealdb_rpc.client.interface import SurrealDBError, SurrealDBQueryResult
-from surrealdb_rpc.client.websocket import InvalidResponseError, WebsocketClient
+from surrealdb_rpc.client.interface import (
+    EmptyResponse,
+    InvalidResultType,
+    SurrealDBError,
+    SurrealDBQueryResult,
+)
+from surrealdb_rpc.client.websocket import WebsocketClient
 from surrealdb_rpc.data_model import (
     SingleOrListOfRecordIds,
     SingleRecordId,
@@ -68,22 +73,25 @@ class SurrealDBWebsocketClient(WebsocketClient):
                     # "code": code,
                     "message": message
                 }:
-                    raise SurrealDBError(message)
+                    raise SurrealDBError.from_message(message)
                 case _:
                     raise SurrealDBError(error)
         return response
 
-    def recv(self) -> dict | list[dict]:
+    def recv(self, empty_response_is_error=True) -> dict | list[dict]:
         response = self._recv()
 
         result: dict | list[dict] | None = response.get("result")
-        if result is None:
-            raise InvalidResponseError(result)
+        if empty_response_is_error and result is None:
+            raise EmptyResponse(result)
 
         return result
 
     def recv_one(self) -> dict:
         """Receive a single result dictionary from the websocket connection
+
+        Raises:
+            InvalidResultType: If the result is not a single dictionary.
 
         Returns:
             SurrealDBResult: A single result dictionary
@@ -91,17 +99,17 @@ class SurrealDBWebsocketClient(WebsocketClient):
         result = self.recv()
 
         if not isinstance(result, dict):
-            raise InvalidResponseError(result)
+            raise InvalidResultType(dict, result)
 
         return result
 
     def recv_query(self) -> list[SurrealDBQueryResult]:
         """
-        Receive a list of results from the websocket connection.
+        Receive a list of query results from the websocket connection.
         Used internally for the `query` method.
 
         Raises:
-            InvalidResponseError: If the response is not a list of results
+            InvalidResultType: If the result is not a list.
 
         Returns:
             list[SurrealDBResult]: A list of results
@@ -109,7 +117,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         result = self.recv()
 
         if not isinstance(result, list):
-            raise InvalidResponseError(result)
+            raise InvalidResultType(list, result)
 
         return [SurrealDBQueryResult(r) for r in result]
 
@@ -161,8 +169,13 @@ class SurrealDBWebsocketClient(WebsocketClient):
     def select(
         self,
         thing: SingleTable | SingleOrListOfRecordIds,
-    ) -> dict | list[dict]:
-        """Select either all records in a table or a single record."""
+    ) -> None | dict | list[dict]:
+        """Select either all records in a table or a single record.
+
+        Returns:
+            None: The thing was not found
+            dict | list[dict]: The selected record(s)
+        """
         thing = (
             [Thing.new(el) for el in thing]
             if isinstance(thing, list)
@@ -170,7 +183,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         )
 
         self.send("select", [thing])
-        return self.recv()
+        return self.recv(empty_response_is_error=False)
 
     def create(
         self,

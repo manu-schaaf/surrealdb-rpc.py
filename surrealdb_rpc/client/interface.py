@@ -33,6 +33,19 @@ class SurrealDBError(Exception):
                 return cls(message)
 
 
+class EmptyResponse(SurrealDBError):
+    pass
+
+
+class InvalidResultType(SurrealDBError):
+    result: object
+
+    def __init__(self, expected: type, result: object):
+        super().__init__(
+            f"Expected result of type {expected.__name__} but got: {type(result).__name__}"
+        )
+
+
 class ParseError(SurrealDBError):
     pass
 
