@@ -2,8 +2,12 @@ from typing import Self
 
 from requests.auth import _basic_auth_str
 
-from surrealdb_rpc.client import SingleOrListOfRecordIds, SingleRecordId, SingleTable
-from surrealdb_rpc.data_model import Thing
+from surrealdb_rpc.data_model import (
+    SingleOrListOfRecordIds,
+    SingleRecordId,
+    SingleTable,
+    Thing,
+)
 from surrealdb_rpc.websocket import InvalidResponseError, WebsocketClient
 
 
