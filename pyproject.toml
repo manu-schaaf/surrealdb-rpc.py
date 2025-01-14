@@ -4,6 +4,7 @@ version = "0.3.0"
 authors = [{ name = "Manuel Schaaf" }]
 description = "A Python library for interacting with SurrealDB via RPC."
 readme = "README.md"
+license.file = "LICENSE"
 requires-python = ">=3.12"
 dependencies = [
     "msgpack>=1.1.0",
