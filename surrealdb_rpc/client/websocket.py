@@ -349,14 +349,7 @@ class SurrealDBClient(WebsocketClient):
         table: SingleTable,
         data: dict | list[dict] | None = None,
     ) -> dict | list[dict]:
-        """Insert one or multiple records in a table.
-
-        Note:
-            - `table` must be the **table name** given as a `str`.
-        """
-        if isinstance(table, Thing):
-            table = table.table
-
+        """Insert one or multiple records in a table."""
         data = data if data is not None else {}
         data = data if isinstance(data, list) else [data]
 

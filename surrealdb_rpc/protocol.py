@@ -4,7 +4,7 @@ import json
 
 import msgpack
 
-from surrealdb_rpc.data_model import UUID, DateTime, Decimal, Duration, Thing
+from surrealdb_rpc.data_model import UUID, DateTime, Decimal, Duration, Table, Thing
 
 
 def msgpack_encode(obj):
@@ -19,6 +19,9 @@ def msgpack_encode(obj):
             return msgpack.ExtType(4, Duration.__str__(td).encode("utf-8"))
         case dt if isinstance(dt, (datetime.datetime, DateTime)):
             return msgpack.ExtType(5, DateTime.__str__(dt).encode("utf-8"))
+        # BUG: tables / table names serialized as Thing ExtTypes are rejected by SurrealDB <=2.1.4?
+        case table if type(table) is Table:
+            return table.table
         case thing if isinstance(thing, Thing):
             return msgpack.ExtType(6, thing.__pack__().encode("utf-8"))
         case _:
