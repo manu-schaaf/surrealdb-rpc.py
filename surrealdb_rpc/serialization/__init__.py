@@ -1,10 +1,11 @@
 import datetime
 import decimal
 import json
+from abc import abstractmethod
 
 import msgpack
 
-from surrealdb_rpc.data_model import UUID, DateTime, Decimal, Duration, Table, Thing
+from surrealdb_rpc.data_model import UUID, DateTime, Decimal, Duration, Thing
 
 
 def msgpack_encode(obj):
@@ -19,11 +20,10 @@ def msgpack_encode(obj):
             return msgpack.ExtType(4, Duration.__str__(td).encode("utf-8"))
         case dt if isinstance(dt, (datetime.datetime, DateTime)):
             return msgpack.ExtType(5, DateTime.__str__(dt).encode("utf-8"))
-        # BUG: tables / table names serialized as Thing ExtTypes are rejected by SurrealDB <=2.1.4?
-        case table if type(table) is Table:
-            return table.table
         case thing if isinstance(thing, Thing):
-            return msgpack.ExtType(6, thing.__pack__().encode("utf-8"))
+            return msgpack.ExtType(6, thing.__msgpack__().encode("utf-8"))
+        case s if isinstance(s, MsgpackSerializable):
+            return s.__msgpack__().encode("utf-8")
         case _:
             return obj
 
@@ -46,6 +46,11 @@ def msgpack_decode(code, data):
             raise ValueError(f"Unknown msgpack extension code: {code}")
 
 
+class MsgpackSerializable:
+    @abstractmethod
+    def __msgpack__(self): ...
+
+
 class SurrealJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         match obj:
@@ -61,3 +66,8 @@ class SurrealJSONEncoder(json.JSONEncoder):
                 return thing.__pack__()
             case _:
                 return super().default(obj)
+
+
+class JSONSerializable:
+    @abstractmethod
+    def __json__(self): ...
