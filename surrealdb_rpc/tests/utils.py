@@ -1,9 +1,9 @@
-from surrealdb_rpc.client.websocket.surrealdb import SurrealDBClient
+from surrealdb_rpc.client.websocket import SurrealDBWebsocketClient
 from surrealdb_rpc.data_model import RecordId
 
 
 def _test_base_queries(port: int, user: str, password: str):
-    with SurrealDBClient(
+    with SurrealDBWebsocketClient(
         host="localhost",
         port=18000,
         ns="test",

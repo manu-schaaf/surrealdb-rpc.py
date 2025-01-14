@@ -1,41 +1,16 @@
-from typing import Self
-
 from requests.auth import _basic_auth_str
 
+from surrealdb_rpc.client.interface import SurrealDBError, SurrealDBQueryResult
+from surrealdb_rpc.client.websocket import InvalidResponseError, WebsocketClient
 from surrealdb_rpc.data_model import (
     SingleOrListOfRecordIds,
     SingleRecordId,
     SingleTable,
     Thing,
 )
-from surrealdb_rpc.websocket import InvalidResponseError, WebsocketClient
 
 
-class SurrealDBError(InvalidResponseError):
-    @classmethod
-    def with_code(cls, code: int, message: str) -> Self:
-        return cls(f"SurrealDB Error ({code}): {message}")
-
-
-class SurrealDBQueryResult(dict):
-    @property
-    def result(self) -> list[dict]:
-        return self["result"]
-
-    @property
-    def status(self):
-        return self.get("status")
-
-    @property
-    def ok(self):
-        return self.status == "OK"
-
-    @property
-    def time(self):
-        return self.get("time")
-
-
-class SurrealDBClient(WebsocketClient):
+class SurrealDBWebsocketClient(WebsocketClient):
     def __init__(
         self,
         host: str,

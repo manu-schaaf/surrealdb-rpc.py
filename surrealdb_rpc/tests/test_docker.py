@@ -1,6 +1,6 @@
 import subprocess
 
-from surrealdb_rpc.client.websocket.surrealdb import SurrealDBError
+from surrealdb_rpc.client import SurrealDBError
 from surrealdb_rpc.tests.utils import _test_base_queries
 
 
