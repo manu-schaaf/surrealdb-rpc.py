@@ -19,4 +19,10 @@ Homepage = "https://github.com/manu-schaaf/surrealdb-rpc.py"
 Issues = "https://github.com/manu-schaaf/surrealdb-rpc.py/issues"
 
 [dependency-groups]
-dev = ["ipykernel>=6.29.5", "pytest>=8.3.4", "python-lsp-server[all]>=1.12.0"]
+dev = [
+    "ipykernel>=6.29.5",
+    "pylsp-rope>=0.1.17",
+    "pytest>=8.3.4",
+    "python-lsp-server[all]>=1.12.0",
+    "ruff>=0.9.3",
+]
