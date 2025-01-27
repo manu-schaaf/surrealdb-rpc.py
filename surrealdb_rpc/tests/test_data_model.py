@@ -14,6 +14,8 @@ class TestThing:
 
         assert Thing.parse("test:1.0").__surql__() == "test:⟨1.0⟩"
 
+        assert Thing("test", '{"foo": "bar"}').__surql__() == 'test:⟨{"foo": "bar"}⟩'
+
     def test_numeric(self):
         assert Thing("test", 42).__surql__() == "test:42"
 

@@ -99,6 +99,15 @@ class Queries:
         response = connection.create("test:bar-baz")
         assert response["id"] == Thing("test", "bar-baz")
 
+        response = connection.create(
+            "test", value="'value'", mapping={"key": "'value'"}
+        )
+        assert response["value"] == "'value'"
+        assert response["mapping"]["key"] == "'value'"
+
+        response = connection.create("test", value="abc-def.xyz")
+        assert response["value"] == "abc-def.xyz"
+
     def test_object_ids(self, connection: SurrealDBWebsocketClient):
         expected = Thing("test", {"foo": "bar"})
         actual = connection.create("test", {"id": {"foo": "bar"}})["id"]
@@ -115,4 +124,18 @@ class Queries:
 
         expected = Thing("test", ["foo", {"bar": "baz"}])
         actual = connection.create("test", {"id": ["foo", {"bar": "baz"}]})["id"]
+        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
+
+    def test_array_of_records(self, connection: SurrealDBWebsocketClient):
+        expected = Thing("test", 123)
+        actual = connection.create(
+            "test",
+            {
+                "array_of_records": [
+                    expected,
+                    Thing("test", 234),
+                    Thing("test", 345),
+                ]
+            },
+        )["array_of_records"][0]
         assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
