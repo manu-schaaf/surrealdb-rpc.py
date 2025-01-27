@@ -28,7 +28,7 @@ def obj_to_surql_str(value: Any, quote: bool = False) -> None | str:
         >>> obj_to_surql_str("complex-string")
         '⟨complex-string⟩'
         >>> obj_to_surql_str("complex-string", quote=True)
-        '`complex-string`'
+        "'complex-string'"
         >>> obj_to_surql_str(42)
         '42'
         >>> obj_to_surql_str(["hello", "world"])
@@ -45,7 +45,7 @@ def obj_to_surql_str(value: Any, quote: bool = False) -> None | str:
     """
     match value:
         case s if isinstance(s, str):
-            return String.auto_quote(s, True) if quote else String.auto_escape(s)
+            return String.auto_quote(s) if quote else String.auto_escape(s)
         case i if isinstance(i, int):
             return str(i)
         case ll if isinstance(ll, (list, tuple)):

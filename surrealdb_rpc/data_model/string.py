@@ -17,7 +17,7 @@ class String(str):
         """
         if cls.is_simple(s):
             return s
-        return cls.escape_backtick(s) if use_backtick else cls.escape_angle(s)
+        return EscapedString.backtick(s) if use_backtick else EscapedString.angle(s)
 
     @classmethod
     def auto_quote(cls, s: str, use_backtick=False) -> str:
@@ -26,38 +26,16 @@ class String(str):
         Examples:
             >>> String.auto_quote("simple_string")
             "'simple_string'"
-            >>> String.auto_quote("complex-string")
-            '⟨complex-string⟩'
+            >>> String.auto_quote("complex'string")
+            '"complex\\'string"'
             >>> String.auto_quote("complex-string", use_backtick=True)
             '`complex-string`'
         """
-        if cls.is_simple(s):
-            return f"'{s}'"
-        return cls.escape_backtick(s) if use_backtick else cls.escape_angle(s)
-
-    @classmethod
-    def escape_angle(cls, s: str) -> str:
-        """Escape a string using angle brackets.
-
-        Examples:
-            >>> String.escape_angle("simple_string")
-            '⟨simple_string⟩'
-            >>> String.escape_angle("complex-string")
-            '⟨complex-string⟩'
-        """
-        return EscapedString.angle(s)
-
-    @classmethod
-    def escape_backtick(cls, s: str) -> str:
-        """Escape a string using backticks.
-
-        Examples:
-            >>> String.escape_backtick("simple_string")
-            '`simple_string`'
-            >>> String.escape_backtick("complex-string")
-            '`complex-string`'
-        """
-        return EscapedString.backtick(s)
+        return (
+            EscapedString.backtick(s)
+            if use_backtick
+            else (EscapedString.single(s) if "'" not in s else EscapedString.double(s))
+        )
 
     @classmethod
     def _is_simple_char(cls, c: str) -> bool:
@@ -71,20 +49,64 @@ class String(str):
 class EscapedString(String):
     @classmethod
     def angle(cls, string) -> Self:
-        if not isinstance(string, cls):
-            if string.startswith("⟨") and string.endswith("⟩"):
-                warnings.warn(
-                    f"The string {string} is already angle-escaped, are you sure you want to escape it again?"
-                )
-            return cls(f"⟨{string.replace('⟩', '\\⟩')}⟩")
-        return cls(string)
+        """Escape a string using angle brackets.
+
+        Examples:
+            >>> EscapedString.angle("simple_string")
+            '⟨simple_string⟩'
+            >>> EscapedString.angle("complex⟨-⟩string")
+            '⟨complex⟨-\\\\⟩string⟩'
+        """
+        if isinstance(string, cls):
+            warnings.warn(
+                f"The string {string} is already escaped with {string[0]}, are you sure you want to escape it again?"
+            )
+        return EscapedString(f"⟨{string.replace('⟩', '\\⟩')}⟩")
 
     @classmethod
     def backtick(cls, string) -> Self:
-        if not isinstance(string, cls):
-            if string.startswith("`") and string.endswith("`"):
-                warnings.warn(
-                    f"The string {string} is already backtick-escaped, are you sure you want to escape it again?"
-                )
-            return cls(f"`{string.replace('`', '\\`')}`")
-        return cls(string)
+        """Escape a string using backticks.
+
+        Examples:
+            >>> EscapedString.backtick("simple_string")
+            '`simple_string`'
+            >>> EscapedString.backtick("complex`-`string")
+            '`complex\\\\`-\\\\`string`'
+        """
+        if isinstance(string, cls):
+            warnings.warn(
+                f"The string {string} is already escaped with {string[0]}, are you sure you want to escape it again?"
+            )
+        return EscapedString(f"`{string.replace('`', '\\`')}`")
+
+    @classmethod
+    def single(cls, string) -> Self:
+        """Escape a string using single-qoutes.
+
+        Examples:
+            >>> EscapedString.single("simple_string")
+            "'simple_string'"
+            >>> EscapedString.single("complex'-'string")
+            "'complex\\\\'-\\\\'string'"
+        """
+        if isinstance(string, cls):
+            warnings.warn(
+                f"The string {string} is already escaped with {string[0]}, are you sure you want to escape it again?"
+            )
+        return EscapedString(f"'{string.replace("'", "\\'")}'")
+
+    @classmethod
+    def double(cls, string) -> Self:
+        """Escape a string using single-qoutes.
+
+        Examples:
+            >>> EscapedString.double('simple_string')
+            '"simple_string"'
+            >>> EscapedString.double('complex"-"string')
+            '"complex\\\\"-\\\\"string"'
+        """
+        if isinstance(string, cls):
+            warnings.warn(
+                f"The string {string} is already escaped with {string[0]}, are you sure you want to escape it again?"
+            )
+        return EscapedString(f'"{string.replace('"', '\\"')}"')
