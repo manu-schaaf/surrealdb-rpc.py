@@ -221,11 +221,18 @@ class SurrealDBWebsocketClient(WebsocketClient):
     def insert_relation(
         self,
         table: SingleTable | None = None,
-        data: dict | None = None,
+        data: dict | list[dict] | None = None,
         **kwargs,
     ) -> dict | list[dict]:
         """Insert a new relation record into a specified table or infer the table from the data"""
-        data = data | kwargs if data else kwargs
+        data = data if data is not None else {}
+        if isinstance(data, list):
+            if kwargs:
+                raise ValueError("Cannot set fields when inserting multiple relations")
+        elif isinstance(data, dict):
+            data |= kwargs
+        else:
+            raise ValueError("Data must be a dictionary or a list of dictionaries")
 
         self.send("insert_relation", [table, data])
         return self.recv()
