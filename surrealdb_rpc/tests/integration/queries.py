@@ -139,3 +139,126 @@ class Queries:
             },
         )["array_of_records"][0]
         assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
+
+    def test_relations(self, connection: SurrealDBWebsocketClient):
+        connection.insert(
+            "test",
+            [{"id": i} for i in range(10)],
+        )
+        connection.relate(Thing("test", 0), "single", Thing("test", 1))
+
+        response = connection.query_one(
+            "SELECT id AS from, ->single->test as to FROM test WHERE ->single"
+        )["result"][0]
+
+        actual = response["from"]
+        expected = Thing("test", 0)
+        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
+
+        actual = response["to"]
+        expected = [Thing("test", 1)]
+        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
+
+        connection.relate(
+            Thing("test", 1),
+            "one_to_many",
+            [
+                Thing("test", 2),
+                Thing("test", 3),
+                Thing("test", 4),
+            ],
+        )
+        response = connection.query_one(
+            "SELECT count() FROM (SELECT ->one_to_many->test AS r FROM test WHERE ->one_to_many SPLIT r) GROUP ALL;"
+        )["result"][0]
+        assert response["count"] == 3, (
+            f"Expected 3 relations from one-to-many RELATE, but got {response['count']}"
+        )
+
+        connection.relate(
+            [
+                Thing("test", 0),
+                Thing("test", 1),
+                Thing("test", 2),
+            ],
+            "many_to_many",
+            [
+                Thing("test", 3),
+                Thing("test", 4),
+                Thing("test", 5),
+            ],
+        )
+        response = connection.query_one(
+            "SELECT count() FROM (SELECT ->many_to_many->test AS r FROM test SPLIT r) GROUP ALL;"
+        )["result"][0]
+        assert response["count"] == 9, (
+            f"Expected 9 relations from cartesian product RELATE, but got {response['count']}"
+        )
+
+        connection.insert_relation(
+            "insert_one", {"in": Thing("test", 0), "out": Thing("test", 1)}
+        )
+        response = connection.query_one(
+            "SELECT id AS from, ->insert_one->test as to FROM test WHERE ->insert_one"
+        )["result"][0]
+
+        actual = response["from"]
+        expected = Thing("test", 0)
+        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
+
+        actual = response["to"]
+        expected = [Thing("test", 1)]
+        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
+
+        connection.insert_relation(
+            "insert_one_kwargs",
+            {"in": Thing("test", 0), "out": Thing("test", 1)},
+            some="field",
+        )
+        response = connection.query_one("SELECT some FROM insert_one_kwargs")["result"]
+        assert response[0]["some"] == "field", (
+            f"Expected 'field' but got {response['field']}"
+        )
+
+        connection.insert_relation(
+            "insert_many",
+            [
+                {"in": Thing("test", 0), "out": Thing("test", 1)},
+                {"in": Thing("test", 2), "out": Thing("test", 3)},
+            ],
+        )
+        response = connection.query_one(
+            "SELECT id AS from, ->insert_many->test as to FROM test WHERE ->insert_many"
+        )["result"]
+
+        actual = response[0]["from"]
+        expected = Thing("test", 0)
+        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
+
+        actual = response[0]["to"]
+        expected = [Thing("test", 1)]
+        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
+
+        actual = response[1]["from"]
+        expected = Thing("test", 2)
+        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
+
+        actual = response[1]["to"]
+        expected = [Thing("test", 3)]
+        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
+
+        try:
+            connection.insert_relation(
+                "insert_many",
+                [
+                    {"in": Thing("test", 0), "out": Thing("test", 1)},
+                    {"in": Thing("test", 2), "out": Thing("test", 3)},
+                ],
+                some="field",
+            )
+        except ValueError as e:
+            assert str(e) == "Cannot set fields when inserting multiple relations"
+        else:
+            raise AssertionError(
+                "Expected ValueError when attempting to set fields on INSERT of multiple relations"
+            )
