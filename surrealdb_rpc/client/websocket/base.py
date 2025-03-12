@@ -23,8 +23,6 @@ class WebsocketSubProtocol:
 
 class JSONSubProtocol(WebsocketSubProtocol):
     def encode(self, data: Any) -> bytes:
-        # if isinstance(data, dict):
-
         data = json.dumps(data, cls=SurrealJSONEncoder, ensure_ascii=False)
         return data.encode("utf-8")
 
@@ -113,12 +111,12 @@ class WebsocketClient:
 
     def _send(self, message: str | bytes | dict) -> None:
         match message:
-            case data if isinstance(data, bytes):
-                self.ws.send(message, text=False)
-            case string if isinstance(string, str):
-                self.ws.send(message)
-            case mapping if isinstance(mapping, dict):
-                self._send(self.sub_protocol.encode(message))
+            case data if isinstance(message, bytes):
+                self.ws.send(data, text=False)
+            case string if isinstance(message, str):
+                self.ws.send(string)
+            case mapping if isinstance(message, dict):
+                self._send(self.sub_protocol.encode(mapping))
             case typ:
                 raise TypeError(
                     f"Invalid message type: {typ}",
