@@ -348,3 +348,29 @@ class Queries:
             pass
         else:
             raise AssertionError("Expected CannotCreateThingFromObj")
+
+    def test_update(self, connection: SurrealDBWebsocketClient):
+        connection.insert("test_update", [{"id": 1}, {"id": 2}, {"id": 3}])
+
+        response: list[dict] = connection.update("test_update", key="value")  # type: ignore
+        assert len(response) == 3, response
+        assert all(r["key"] == "value" for r in response), response
+
+        response = connection.update("test_update", {"key": "other"})  # type: ignore
+        assert len(response) == 3, response
+        assert all(r["key"] == "other" for r in response), response
+
+        response = connection.update("test_update", {"other": "value"}, key="value")  # type: ignore
+        assert len(response) == 3, response
+        assert all(r["key"] == "value" for r in response), response
+        assert all(r["other"] == "value" for r in response), response
+
+        connection.update("test_update:2", odd=False)
+        connection.update(["test_update:1", "test_update:3"], odd=True)
+
+        response = connection.select("test_update")  # type: ignore
+        assert len(response) == 3, response
+        assert all("odd" in r for r in response), response
+        assert all(
+            int(r["id"].record_id.value) % 2 == int(r["odd"]) for r in response
+        ), response
