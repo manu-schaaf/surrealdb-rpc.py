@@ -88,9 +88,19 @@ class Thing[T](JSONSerializable, SurrealQLSerializable):
             case thingifyable if hasattr(obj, "__thing__") and callable(obj.__thing__):
                 return thingifyable.__thing__()
             case string if isinstance(obj, str):
-                return cls.parse(string) if ":" in string else Table(string)
+                return cls.parse(string)
             case _:
                 raise CannotCreateThingFromObj(obj)
+
+    @classmethod
+    def from_obj_maybe_table(cls, obj: Any) -> Self | Table:
+        match obj:
+            case table if isinstance(obj, Table):
+                return table
+            case string if isinstance(string, str) and ":" not in string:
+                return Table(string)
+            case other:
+                return cls.from_obj(other)
 
     def change_table(self, table: str | Table):
         """
