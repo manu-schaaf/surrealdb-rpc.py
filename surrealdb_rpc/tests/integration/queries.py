@@ -1,5 +1,6 @@
 import traceback
 
+from surrealdb_rpc.client.interface import InternalError as SurrealDBInternalError
 from surrealdb_rpc.client.websocket import SurrealDBWebsocketClient
 from surrealdb_rpc.data_model import Thing
 
@@ -262,3 +263,54 @@ class Queries:
             raise AssertionError(
                 "Expected ValueError when attempting to set fields on INSERT of multiple relations"
             )
+
+    def test_typed_table(self, connection: SurrealDBWebsocketClient):
+        connection.query(
+            """
+            DEFINE table test_typed TYPE NORMAL;
+            DEFINE FIELD text ON TABLE test_typed TYPE string;
+            """
+        )
+
+        try:
+            connection.query("CREATE test_typed SET text = None;")
+        except Exception as e:
+            raise AssertionError from e
+
+        try:
+            connection.create("test_typed", text=None)
+        except SurrealDBInternalError as e:
+            if "Found NONE for field" not in str(e):
+                raise AssertionError(
+                    "Expected SurrealDB InternalError 'Found NONE for field' "
+                    "when creating a record with a None value using the RPC create method "
+                    f"but got: '{e}'"
+                ) from e
+        except Exception as e:
+            raise AssertionError from e
+        else:
+            raise AssertionError(
+                "Expected SurrealDB InternalError 'Found NONE for field' "
+                "when creating a record with a None value using the RPC create method"
+            )
+
+    def test_typed_table_option(self, connection: SurrealDBWebsocketClient):
+        connection.query(
+            """
+            DEFINE table test_typed_option TYPE NORMAL;
+            DEFINE FIELD OVERWRITE text ON TABLE test_typed_option TYPE option<string>;
+            """
+        )
+
+        try:
+            connection.query("CREATE test_typed_option SET text = None;")
+        except Exception as e:
+            raise AssertionError from e
+
+        try:
+            connection.create(
+                "test_typed_option",
+                text=None,
+            )
+        except Exception as e:
+            raise AssertionError from e
