@@ -3,6 +3,8 @@ import traceback
 from surrealdb_rpc.client.interface import InternalError as SurrealDBInternalError
 from surrealdb_rpc.client.websocket import SurrealDBWebsocketClient
 from surrealdb_rpc.data_model import Thing
+from surrealdb_rpc.data_model.table import Table
+from surrealdb_rpc.data_model.thing import CannotCreateThingFromObj
 
 
 class Queries:
@@ -322,3 +324,33 @@ class Queries:
             )
         except Exception as e:
             raise AssertionError from e
+
+    def test_select(self, connection: SurrealDBWebsocketClient):
+        response_one = connection.insert("table_one", {"id": 1})
+        response_two = connection.insert("table_two", [{"id": 1}, {"id": 2}])
+
+        response_select = connection.select("table_one")
+        assert response_select == response_one, response_select
+
+        response_select = connection.select("table_two")
+        assert response_select == response_two, response_select
+
+        response_select = connection.select(Table("table_one"))
+        assert response_select == response_one, response_select
+
+        response_select = connection.select(Table("table_two"))
+        assert response_select == response_two, response_select
+
+        response_select = connection.select(
+            ["table_one:1", "table_two:1", "table_two:2"]
+        )
+        assert len(response_select) == 3, response_select  # type: ignore
+
+        try:
+            response_select = connection.select(
+                [Table("table_one"), Table("table_two")]  # type: ignore
+            )
+        except CannotCreateThingFromObj:
+            pass
+        else:
+            raise AssertionError("Expected CannotCreateThingFromObj")
