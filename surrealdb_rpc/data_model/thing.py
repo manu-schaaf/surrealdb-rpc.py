@@ -27,7 +27,7 @@ class CannotCreateThingFromObj(ValueError):
 class Thing[T](JSONSerializable, SurrealQLSerializable):
     __reference_class__: type[T]
 
-    def __init__(self, table: Table, id: RecordId):
+    def __init__(self, table: str | Table, id: Any | RecordId):
         self.table: Table = table if isinstance(table, Table) else Table(table)
         self.record_id: RecordId = id if isinstance(id, RecordId) else RecordId(id)
 
@@ -71,7 +71,7 @@ class Thing[T](JSONSerializable, SurrealQLSerializable):
         return cls(Table.parse(table), RecordId.from_surql(record_id))
 
     @classmethod
-    def from_obj(cls, obj: Any) -> Self | Table:
+    def from_obj(cls, obj: Any) -> Self:
         """
         Try to create a new Thing from the given object.
 

@@ -1,4 +1,5 @@
 import json
+from typing import Self
 
 from ulid import encode_random, ulid
 from uuid_extensions import uuid7str
@@ -21,10 +22,11 @@ class InvalidRecordIdType(ValueError):
 
 
 class RecordId[T](JSONSerializable, SurrealQLSerializable):
-    def __init__(self, record_id: T):
-        self.value: T = (
-            record_id.value if isinstance(record_id, RecordId) else record_id
-        )
+    def __init__(self, record_id: "T | RecordId[T]"):
+        if isinstance(record_id, RecordId):
+            self.value: T = record_id.value
+        else:
+            self.value = record_id
 
     @classmethod
     def new(
@@ -64,7 +66,7 @@ class RecordId[T](JSONSerializable, SurrealQLSerializable):
             case i if isinstance(i, int):
                 return NumericRecordId(i)
             case ll if isinstance(ll, (list, tuple)):
-                return ArrayRecordId(ll)
+                return ArrayRecordId(list(ll))
             case dd if isinstance(dd, dict):
                 return ObjectRecordId(dd)
             case _:
@@ -89,7 +91,7 @@ class RecordId[T](JSONSerializable, SurrealQLSerializable):
                 if (
                     string.startswith("⟨")
                     and string.endswith("⟩")
-                    and not string.endswith("\⟩")
+                    and not string.endswith(r"\⟩")
                 ):
                     string = string[1:-1]
                 return TextRecordId(string)
@@ -122,13 +124,13 @@ class RecordId[T](JSONSerializable, SurrealQLSerializable):
     def __surql__(self) -> str:
         match self.value:
             case s if isinstance(s, str):
-                return TextRecordId.__surql__(self)
+                return TextRecordId.__surql__(self)  # type: ignore
             case i if isinstance(i, int):
-                return NumericRecordId.__surql__(self)
+                return NumericRecordId.__surql__(self)  # type: ignore
             case ll if isinstance(ll, (list, tuple)):
-                return ArrayRecordId.__surql__(self)
+                return ArrayRecordId.__surql__(self)  # type: ignore
             case dd if isinstance(dd, dict):
-                return ObjectRecordId.__surql__(self)
+                return ObjectRecordId.__surql__(self)  # type: ignore
             case _:
                 raise NotImplementedError
 

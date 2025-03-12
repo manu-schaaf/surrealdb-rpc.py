@@ -31,19 +31,19 @@ class JSONSubProtocol(WebsocketSubProtocol):
 
     @property
     def protocol(self) -> Subprotocol:
-        return "json"
+        return Subprotocol("json")
 
 
 class MsgPackSubProtocol(WebsocketSubProtocol):
     def encode(self, data: Any) -> bytes:
-        return msgpack.packb(msgpack_encode(data), default=msgpack_encode)
+        return msgpack.packb(msgpack_encode(data), default=msgpack_encode)  # type: ignore
 
     def decode(self, data: bytes) -> Any:
         return msgpack.unpackb(data, ext_hook=msgpack_decode)
 
     @property
     def protocol(self) -> Subprotocol:
-        return "msgpack"
+        return Subprotocol("msgpack")
 
 
 class InvalidResponseError(WebSocketException):
@@ -124,4 +124,4 @@ class WebsocketClient:
                 )
 
     def _recv(self) -> Any:
-        return self.sub_protocol.decode(self.ws.recv(decode=False))
+        return self.sub_protocol.decode(self.ws.recv(decode=False))  # type: ignore

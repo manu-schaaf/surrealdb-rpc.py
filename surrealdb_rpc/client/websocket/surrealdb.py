@@ -78,7 +78,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
                     raise SurrealDBError(error)
         return response
 
-    def recv(self, empty_response_is_error=True) -> dict | list[dict]:
+    def recv(self, empty_response_is_error=True) -> dict | list[dict] | None:
         response = self._recv()
 
         result: dict | list[dict] | None = response.get("result")
@@ -216,7 +216,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         data = data if isinstance(data, list) else [data]
 
         self.send("insert", [table, data])
-        return self.recv()
+        return self.recv()  # type: ignore
 
     def insert_relation(
         self,
@@ -235,7 +235,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
             raise ValueError("Data must be a dictionary or a list of dictionaries")
 
         self.send("insert_relation", [table, data])
-        return self.recv()
+        return self.recv()  # type: ignore
 
     def update(
         self,
@@ -252,7 +252,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         data = data | kwargs if data else kwargs
 
         self.send("update", [thing, data])
-        return self.recv()
+        return self.recv()  # type: ignore
 
     def upsert(
         self,
@@ -269,7 +269,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         data = data | kwargs if data else kwargs
 
         self.send("upsert", [thing, data])
-        return self.recv()
+        return self.recv()  # type: ignore
 
     def relate(
         self,
@@ -293,7 +293,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         data = data | kwargs if data else kwargs
 
         self.send("relate", [record_in, relation, record_out, data])
-        return self.recv()
+        return self.recv()  # type: ignore
 
     def merge(
         self,
@@ -310,7 +310,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         data = data | kwargs if data else kwargs
 
         self.send("merge", [thing, data])
-        return self.recv()
+        return self.recv()  # type: ignore
 
     def patch(
         self,
@@ -322,7 +322,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         thing = Thing.from_obj(thing)
 
         self.send("patch", [thing, patches, diff])
-        return self.recv()
+        return self.recv()  # type: ignore
 
     def delete(
         self,
@@ -332,4 +332,4 @@ class SurrealDBWebsocketClient(WebsocketClient):
         thing = Thing.from_obj(thing)
 
         self.send("delete", [thing])
-        return self.recv()
+        return self.recv()  # type: ignore

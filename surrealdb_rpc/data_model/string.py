@@ -61,7 +61,7 @@ class EscapedString(String):
             warnings.warn(
                 f"The string {string} is already escaped with {string[0]}, are you sure you want to escape it again?"
             )
-        return EscapedString(f"⟨{string.replace('⟩', '\\⟩')}⟩")
+        return cls(f"⟨{string.replace('⟩', '\\⟩')}⟩")
 
     @classmethod
     def backtick(cls, string) -> Self:
@@ -77,7 +77,7 @@ class EscapedString(String):
             warnings.warn(
                 f"The string {string} is already escaped with {string[0]}, are you sure you want to escape it again?"
             )
-        return EscapedString(f"`{string.replace('`', '\\`')}`")
+        return cls(f"`{string.replace('`', '\\`')}`")
 
     @classmethod
     def single(cls, string) -> Self:
@@ -93,7 +93,7 @@ class EscapedString(String):
             warnings.warn(
                 f"The string {string} is already escaped with {string[0]}, are you sure you want to escape it again?"
             )
-        return EscapedString(f"'{string.replace("'", "\\'")}'")
+        return cls(f"'{string.replace("'", "\\'")}'")
 
     @classmethod
     def double(cls, string) -> Self:
@@ -109,4 +109,4 @@ class EscapedString(String):
             warnings.warn(
                 f"The string {string} is already escaped with {string[0]}, are you sure you want to escape it again?"
             )
-        return EscapedString(f'"{string.replace('"', '\\"')}"')
+        return cls(f'"{string.replace('"', '\\"')}"')

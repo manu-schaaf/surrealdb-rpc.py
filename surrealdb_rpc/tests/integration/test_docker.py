@@ -70,10 +70,14 @@ class DockerDB:
         )
 
     def stdout(self):
-        return self.process and self.process.stdout.read().decode()
+        return (
+            self.process and self.process.stdout and self.process.stdout.read().decode()
+        )
 
     def stderr(self):
-        return self.process and self.process.stderr.read().decode()
+        return (
+            self.process and self.process.stderr and self.process.stderr.read().decode()
+        )
 
     def terminate(self):
         if self.process is None:

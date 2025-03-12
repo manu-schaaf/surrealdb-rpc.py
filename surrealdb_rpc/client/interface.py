@@ -6,29 +6,29 @@ class SurrealDBError(Exception):
     def from_message(cls, message: str) -> Self:
         match message:
             case "Parse error":
-                return ParseError(message)
+                return ParseError(message)  # type: ignore
             case "Invalid request":
-                return InvalidRequest(message)
+                return InvalidRequest(message)  # type: ignore
             case "Method not found":
-                return MethodNotFound(message)
+                return MethodNotFound(message)  # type: ignore
             case "Method not allowed":
-                return MethodNotAllowed(message)
+                return MethodNotAllowed(message)  # type: ignore
             case "Invalid params":
-                return InvalidParams(message)
+                return InvalidParams(message)  # type: ignore
             case "Live Query was made, but is not supported":
-                return LqNotSuported(message)
+                return LqNotSuported(message)  # type: ignore
             case (
                 "RT is enabled for the session, but LQ is not supported by the context"
             ):
-                return BadLQConfig(message)
+                return BadLQConfig(message)  # type: ignore
             case "A GraphQL request was made, but GraphQL is not supported by the context":
-                return BadGQLConfig(message)
+                return BadGQLConfig(message)  # type: ignore
             case msg if msg.startswith("There was a problem with the database:"):
                 _, internal = msg.split(": ", 1)
-                return InternalError(internal.strip())
+                return InternalError(internal.strip())  # type: ignore
             case msg if msg.startswith("Error:"):
                 _, thrown = msg.split(": ", 1)
-                return Thrown(thrown.strip())
+                return Thrown(thrown.strip())  # type: ignore
             case _:
                 return cls(message)
 

@@ -19,7 +19,7 @@ def dict_to_surql_str(dd: dict) -> str:
     )
 
 
-def obj_to_surql_str(value: Any, quote: bool = False) -> None | str:
+def obj_to_surql_str(value: Any, quote: bool = False) -> str:
     """Convert an object into a SurrealQL-compatible string representation.
 
     Examples:
@@ -55,4 +55,4 @@ def obj_to_surql_str(value: Any, quote: bool = False) -> None | str:
         case rid if isinstance(rid, SurrealQLSerializable):
             return rid.__surql__()
         case _:
-            raise NotImplementedError
+            raise NotImplementedError(f"Unsupported type: {type(value)}")

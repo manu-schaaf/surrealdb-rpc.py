@@ -17,7 +17,7 @@ class Table(SurrealQLSerializable, JSONSerializable):
         if (
             string.startswith("⟨")
             and string.endswith("⟩")
-            and not string.endswith("\⟩")
+            and not string.endswith(r"\⟩")
         ):
             string = string[1:-1]
         return cls(string)

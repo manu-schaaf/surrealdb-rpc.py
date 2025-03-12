@@ -7,8 +7,8 @@ from surrealdb_rpc.serialization.abc import JSONSerializable
 
 
 class SurrealJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        match obj:
+    def default(self, o):
+        match o:
             case uuid if isinstance(uuid, UUID):
                 return str(uuid)
             case i if isinstance(i, (decimal.Decimal, Decimal)):
@@ -20,4 +20,4 @@ class SurrealJSONEncoder(json.JSONEncoder):
             case thing if isinstance(thing, JSONSerializable):
                 return thing.__json__()
             case _:
-                return super().default(obj)
+                return super().default(o)

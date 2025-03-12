@@ -26,7 +26,7 @@ class Queries:
         )
 
         # Fetch a single record by ID
-        response_select = connection.select("example:123")
+        response_select: list[dict] = connection.select("example:123")  # type: ignore
         assert response_select == response_create
 
         # Run a SurrealQL query
@@ -66,7 +66,7 @@ class Queries:
             ],
         )
 
-        response_select = connection.select(["example:123", "example:456"])
+        response_select = connection.select(["example:123", "example:456"])  # type: ignore
         assert len(response_select) == 2, (
             f"Expected 2 records but got {response_select}"
         )
@@ -158,7 +158,9 @@ class Queries:
 
         actual = response["to"]
         expected = [Thing("test", 1)]
-        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
+        assert expected == actual, (
+            f"[{expected[0].__surql__()}] != {actual.__surql__()}"
+        )
 
         connection.relate(
             Thing("test", 1),
@@ -209,7 +211,9 @@ class Queries:
 
         actual = response["to"]
         expected = [Thing("test", 1)]
-        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
+        assert expected == actual, (
+            f"[{expected[0].__surql__()}] != {actual.__surql__()}"
+        )
 
         connection.insert_relation(
             "insert_one_kwargs",
@@ -238,7 +242,9 @@ class Queries:
 
         actual = response[0]["to"]
         expected = [Thing("test", 1)]
-        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
+        assert expected == actual, (
+            f"[{expected[0].__surql__()}] != {actual.__surql__()}"
+        )
 
         actual = response[1]["from"]
         expected = Thing("test", 2)
@@ -246,7 +252,9 @@ class Queries:
 
         actual = response[1]["to"]
         expected = [Thing("test", 3)]
-        assert expected == actual, f"{expected.__surql__()} != {actual.__surql__()}"
+        assert expected == actual, (
+            f"[{expected[0].__surql__()}] != {actual.__surql__()}"
+        )
 
         try:
             connection.insert_relation(
