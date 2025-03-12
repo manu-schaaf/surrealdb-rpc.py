@@ -101,19 +101,19 @@ class RecordId[T](JSONSerializable, SurrealQLSerializable):
         return SurrealQLRecordId(string)
 
     @classmethod
-    def rand(cls, table: str | Table) -> "TextRecordId":
+    def rand(cls) -> "TextRecordId":
         """Generate a 20-character (a-z0-9) record ID."""
-        return TextRecordId(table, encode_random(20).lower())
+        return TextRecordId(encode_random(20).lower())
 
     @classmethod
-    def ulid(cls, table: str | Table) -> "TextRecordId":
+    def ulid(cls) -> "TextRecordId":
         """Generate a ULID-based record ID."""
-        return TextRecordId(table, ulid().lower())
+        return TextRecordId(ulid().lower())
 
     @classmethod
-    def uuid(cls, table: str | Table, ns: int | None = None) -> "TextRecordId":
+    def uuid(cls, ns: int | None = None) -> "TextRecordId":
         """Generate a UUIDv7-based record ID."""
-        return TextRecordId(table, uuid7str(ns))
+        return TextRecordId(uuid7str(ns))
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.value})"
