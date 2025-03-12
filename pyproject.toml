@@ -1,6 +1,6 @@
 [project]
 name = "surrealdb-rpc"
-version = "0.3.4"
+version = "0.3.5"
 authors = [{ name = "Manuel Schaaf" }]
 description = "A Python library for interacting with SurrealDB via RPC."
 readme = "README.md"
