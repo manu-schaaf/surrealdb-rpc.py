@@ -23,6 +23,10 @@ def msgpack_encode(obj):
             return msgpack.ExtType(6, thing.__surql__().encode("utf-8"))
         case s if isinstance(s, SurrealQLSerializable):
             return s.__surql__()
+        case mapping if isinstance(obj, dict):
+            return {msgpack_encode(k): msgpack_encode(v) for k, v in mapping.items()}
+        case array if isinstance(obj, (list, tuple)):
+            return [msgpack_encode(item) for item in array]
         case _:
             return obj
 

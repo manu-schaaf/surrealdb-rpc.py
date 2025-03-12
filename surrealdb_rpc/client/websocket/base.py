@@ -36,7 +36,7 @@ class JSONSubProtocol(WebsocketSubProtocol):
 
 class MsgPackSubProtocol(WebsocketSubProtocol):
     def encode(self, data: Any) -> bytes:
-        return msgpack.packb(data, default=msgpack_encode)
+        return msgpack.packb(msgpack_encode(data), default=msgpack_encode)
 
     def decode(self, data: bytes) -> Any:
         return msgpack.unpackb(data, ext_hook=msgpack_decode)
