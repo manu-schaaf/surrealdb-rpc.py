@@ -14,9 +14,9 @@ class SurrealJSONEncoder(json.JSONEncoder):
             case i if isinstance(i, (decimal.Decimal, Decimal)):
                 return str(i)
             case td if isinstance(td, (datetime.timedelta, Duration)):
-                return Duration.__str__(td)
+                return Duration.to_string(td)
             case dt if isinstance(dt, (datetime.datetime, DateTime)):
-                return DateTime.__str__(dt)
+                return DateTime.to_string(dt)
             case thing if isinstance(thing, JSONSerializable):
                 return thing.__json__()
             case _:

@@ -16,9 +16,9 @@ def msgpack_encode(obj):
         case i if isinstance(i, (decimal.Decimal, Decimal)):
             return msgpack.ExtType(3, str(i).encode("utf-8"))
         case td if isinstance(td, (datetime.timedelta, Duration)):
-            return msgpack.ExtType(4, Duration.__str__(td).encode("utf-8"))
+            return msgpack.ExtType(4, Duration.to_string(td).encode("utf-8"))
         case dt if isinstance(dt, (datetime.datetime, DateTime)):
-            return msgpack.ExtType(5, DateTime.__str__(dt).encode("utf-8"))
+            return msgpack.ExtType(5, DateTime.to_string(dt).encode("utf-8"))
         case thing if isinstance(thing, Thing):
             return msgpack.ExtType(6, thing.__surql__().encode("utf-8"))
         case s if isinstance(s, SurrealQLSerializable):

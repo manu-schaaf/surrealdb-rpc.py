@@ -8,15 +8,19 @@ from uuid_extensions import uuid7str
 
 
 class Duration(timedelta):
-    def __str__(self) -> str:
+    @staticmethod
+    def to_string(duration: "timedelta | Duration") -> str:
         string = ""
-        if self.days:
-            string += f"{self.days}d"
-        if self.seconds:
-            string += f"{self.seconds}s"
-        if self.microseconds:
-            string += f"{self.microseconds}us"
+        if duration.days:
+            string += f"{duration.days}d"
+        if duration.seconds:
+            string += f"{duration.seconds}s"
+        if duration.microseconds:
+            string += f"{duration.microseconds}us"
         return string
+
+    def __str__(self) -> str:
+        return self.to_string(self)
 
     @classmethod
     def from_surql(cls, string: str) -> Self:
@@ -81,8 +85,12 @@ class Duration(timedelta):
 
 
 class DateTime(datetime):
+    @staticmethod
+    def to_string(date_time: "datetime | DateTime") -> str:
+        return date_time.astimezone(timezone.utc).isoformat()
+
     def __str__(self) -> str:
-        return self.astimezone(timezone.utc).isoformat()
+        return self.to_string(self)
 
     @classmethod
     def from_surql(cls, string: str) -> Self:
@@ -109,7 +117,7 @@ class UUID(str):
             value = self.new()
         elif isinstance(value, bytes):
             value = value.decode("utf-8")
-        super().__init__(value)
+        super().__init__(value)  # type: ignore
 
     @classmethod
     def new(cls) -> Self:
