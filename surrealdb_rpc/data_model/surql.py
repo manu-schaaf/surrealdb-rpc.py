@@ -44,15 +44,15 @@ def obj_to_surql_str(value: Any, quote: bool = False) -> str:
         'table:⟨123⟩'
     """
     match value:
-        case s if isinstance(s, str):
-            return String.auto_quote(s) if quote else String.auto_escape(s)
-        case i if isinstance(i, int):
-            return str(i)
-        case ll if isinstance(ll, (list, tuple)):
-            return list_to_surql_str(ll)
-        case dd if isinstance(dd, dict):
-            return dict_to_surql_str(dd)
-        case rid if isinstance(rid, SurrealQLSerializable):
-            return rid.__surql__()
+        case string if isinstance(value, str):
+            return String.auto_quote(string) if quote else String.auto_escape(string)
+        case number if isinstance(value, int):
+            return str(number)
+        case array if isinstance(value, (list, tuple)):
+            return list_to_surql_str(list(array))
+        case mapping if isinstance(value, dict):
+            return dict_to_surql_str(mapping)
+        case serializable if isinstance(value, SurrealQLSerializable):
+            return serializable.__surql__()
         case _:
             raise NotImplementedError(f"Unsupported type: {type(value)}")
