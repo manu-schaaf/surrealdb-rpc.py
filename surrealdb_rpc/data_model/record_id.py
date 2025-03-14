@@ -1,5 +1,4 @@
 import json
-from typing import Self
 
 from ulid import encode_random, ulid
 from uuid_extensions import uuid7str
@@ -9,7 +8,6 @@ from surrealdb_rpc.data_model.surql import (
     dict_to_surql_str,
     list_to_surql_str,
 )
-from surrealdb_rpc.data_model.table import Table
 from surrealdb_rpc.serialization.abc import JSONSerializable, SurrealQLSerializable
 
 
