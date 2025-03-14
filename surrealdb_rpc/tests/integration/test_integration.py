@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 
 import pytest
@@ -7,10 +8,10 @@ from surrealdb_rpc.client.websocket import SurrealDBWebsocketClient
 from surrealdb_rpc.tests.integration.queries import Queries
 
 
-class DockerDB:
+class SurrealDB:
     def __init__(
         self,
-        name: str = "surrealdb-test",
+        name: str = "surrealdb-rpc-test",
         port: int = 18000,
         user: str = "root",
         password: str = "root",
@@ -25,10 +26,22 @@ class DockerDB:
         self.user = user
         self.password = password
 
-    def start(self):
-        self.process = subprocess.Popen(
-            [
-                "docker",
+        if shutil.which("surreal") is not None:
+            self._cmd = [
+                "surreal",
+                "start",
+                "--log",
+                "debug",
+                "--user",
+                self.user,
+                "--pass",
+                self.password,
+                "--bind",
+                f"127.0.0.1:{self.port}",
+            ]
+        elif (cmd := shutil.which("docker") or shutil.which("podman")) is not None:
+            self._cmd = [
+                cmd,
                 "run",
                 "--rm",
                 "--name",
@@ -45,9 +58,13 @@ class DockerDB:
                 self.user,
                 "--pass",
                 self.password,
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            ]
+        else:
+            raise RuntimeError("Neither surreal nor docker or podman exists")
+
+    def start(self):
+        self.process = subprocess.Popen(
+            self._cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
         try:
             self.process.wait(timeout=5)
@@ -61,7 +78,7 @@ class DockerDB:
                 filter(
                     bool,
                     [
-                        "Failed to start Docker container",
+                        "Failed to start SurrealDB",
                         f"stdout: {stdout}" if stdout else "",
                         f"stderr: {stderr}" if stderr else "",
                     ],
@@ -95,7 +112,7 @@ class DockerDB:
         try:
             self.process.wait(5)
         except subprocess.TimeoutExpired:
-            raise RuntimeError("Failed to stop Docker container!")
+            raise RuntimeError("Failed to stop SurrealDB!")
 
     def __enter__(self):
         return self.start()
@@ -106,7 +123,7 @@ class DockerDB:
 
 @pytest.fixture(scope="module")
 def connection():
-    db = DockerDB().start()
+    db = SurrealDB().start()
     try:
         with SurrealDBWebsocketClient(
             host="localhost",
@@ -125,5 +142,11 @@ def connection():
         db.terminate()
 
 
+@pytest.mark.skipif(
+    shutil.which("surreal") is None
+    and shutil.which("docker") is None
+    and shutil.which("podman") is None,
+    reason="Neither surreal nor docker or podman exists",
+)
 class TestWebsocketClient(Queries):
     pass
