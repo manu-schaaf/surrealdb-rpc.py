@@ -5,19 +5,38 @@ from typing import Self
 class String(str):
     @classmethod
     def auto_escape(cls, s: str, use_backtick=False) -> str:
-        """Automatically escape a string using the appropriate method.
+        """Automatically escape a string using either angle brackets or backticks.
+
+        Note:
+            If the string is already escaped, it will be unescaped before escaping it with the appropriate method.
 
         Examples:
-            >>> String.auto_escape("simple_string")
-            'simple_string'
-            >>> String.auto_escape("complex-string")
-            '⟨complex-string⟩'
-            >>> String.auto_escape("complex-string", use_backtick=True)
-            '`complex-string`'
+            >>> print(String.auto_escape("simple_string"))
+            simple_string
+            >>> print(String.auto_escape("complex-string"))
+            ⟨complex-string⟩
+            >>> print(String.auto_escape("complex-string", use_backtick=True))
+            `complex-string`
+            >>> print(String.auto_escape("`complex-string`"))
+            ⟨complex-string⟩
+            >>> print(String.auto_escape("`complex-string`", use_backtick=True))
+            `complex-string`
         """
         if cls.is_simple(s):
             return s
+        if cls.is_escaped(s):
+            s = s[1:-1]
         return EscapedString.backtick(s) if use_backtick else EscapedString.angle(s)
+
+    @staticmethod
+    def is_escaped(s: str) -> bool:
+        match s[0], s[-1]:
+            case "⟨", "⟩" if not s.endswith("\\⟩"):
+                return True
+            case "`", "`" if not s.endswith("\\`"):
+                return True
+            case _:
+                return False
 
     @classmethod
     def auto_quote(cls, s: str, use_backtick=False) -> str:

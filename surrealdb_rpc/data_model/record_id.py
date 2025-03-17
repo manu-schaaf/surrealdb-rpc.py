@@ -90,6 +90,10 @@ class RecordId[T](JSONSerializable, SurrealQLSerializable):
                     string.startswith("⟨")
                     and string.endswith("⟩")
                     and not string.endswith(r"\⟩")
+                ) or (
+                    string.startswith("`")
+                    and string.endswith("`")
+                    and not string.endswith(r"\`")
                 ):
                     string = string[1:-1]
                 return TextRecordId(string)
