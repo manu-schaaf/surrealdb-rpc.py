@@ -1,4 +1,5 @@
 from typing import Required, TypedDict
+
 from requests.auth import _basic_auth_str
 
 from surrealdb_rpc.client.interface import (
@@ -106,8 +107,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         return result
 
     def recv_query(self) -> list[SurrealDBQueryResult]:
-        """
-        Receive a list of query results from the websocket connection.
+        """Receive a list of query results from the websocket connection.
         Used internally for the `query` method.
 
         Raises:
@@ -160,7 +160,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         return self.recv_query()
 
     def query_one(self, sql: str, **vars) -> SurrealDBQueryResult:
-        """Conenience method to execute a custom query, returning a single result.
+        """Convenience method to execute a custom query, returning a single result.
 
         Note:
             If the query returns more than one result, the last result is returned.
