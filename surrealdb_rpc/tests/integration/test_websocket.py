@@ -30,6 +30,22 @@ _STARTUP_TIMEOUT: Final[int] = int(os.environ.get("SURREAL_STARTUP_TIMEOUT", "5"
 _SHUTDOWN_TIMEOUT: Final[int] = int(os.environ.get("SURREAL_SHUTDOWN_TIMEOUT", "5"))
 
 
+class IntegrationTestError(Exception):
+    pass
+
+
+class CommandNotFoundError(IntegrationTestError):
+    pass
+
+
+class StartupError(IntegrationTestError):
+    pass
+
+
+class ShutdownError(IntegrationTestError):
+    pass
+
+
 class SurrealDB:
     def __init__(
         self,
@@ -86,7 +102,7 @@ class SurrealDB:
                 self.password,
             ]
         else:
-            raise RuntimeError(
+            raise CommandNotFoundError(
                 "Cannot find surreal, docker, or podman to start a SurrealDB instance for integration testing"
             )
 
@@ -101,12 +117,13 @@ class SurrealDB:
 
         stdout = self.stdout()
         stderr = self.stderr()
-        raise RuntimeError(
+        raise StartupError(
             "\n".join(
                 filter(
                     bool,
                     [
                         "Failed to start SurrealDB instance using " + self._cmd[0],
+                        "args: " + " ".join(self._cmd),
                         f"stdout: {stdout}" if stdout else "",
                         f"stderr: {stderr}" if stderr else "",
                     ],
@@ -141,10 +158,11 @@ class SurrealDB:
             self.process.wait(_SHUTDOWN_TIMEOUT)
         except subprocess.TimeoutExpired:
             msg = f"Failed to terminate & kill SurrealDB with PID {self.process.pid} after timeout started using {self._cmd[0]}"
+            msg += "\nargs:  " + " ".join(self._cmd)
             if err := self.stderr():
                 err = "  ".join(err.splitlines(True))
                 msg += f", stderr:\n  {err}"
-            raise RuntimeError(msg)
+            raise ShutdownError(msg)
 
         return True
 
@@ -165,7 +183,7 @@ def _is_db_already_running():
 
 
 @pytest.fixture(scope="module")
-def connection():
+def connection(request):
     db = None
     try:
         if not _is_db_already_running():
@@ -192,12 +210,16 @@ def connection():
             yield connection
 
             if _REMOVE_AFTER:
-                connection.query(f"REMOVE DATABASE IF EXISTS {_DATABASE}")
+                connection.query(f"REMOVE DATABASE IF EXISTS {_DATABASE};")
+    except IntegrationTestError:
+        LOGGER.error(traceback.format_exc())
+        raise
     except SurrealDBError as e:
         msg = "Caught a SurrealDB error"
         if db and (err := db.stderr()):
             err = "  ".join(err.splitlines(True))
             msg += f", stderr:\n  {err}"
+        LOGGER.error(msg, traceback.format_exc())
         raise RuntimeError(msg) from e
     finally:
         return db is None or db.terminate()
@@ -218,6 +240,7 @@ def _should_skip_test() -> bool:
     reason="No test DB instance is running and we cannot start one",
 )
 @pytest.mark.integration
+@pytest.mark.usefixtures("connection")
 class TestWebsocketClient:
     def test_base_queries(self, connection: SurrealDBWebsocketClient):
         example_id = Thing("example", 123)
