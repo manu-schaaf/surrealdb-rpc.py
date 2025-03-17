@@ -1,5 +1,8 @@
 # SurrealDB RPC Python Client
 
+![Unit & Integration Test](https://github.com/manu-schaaf/surrealdb-rpc.py/actions/workflows/workflow.yml/badge.svg)
+![PyPI - Version](https://img.shields.io/pypi/v/surrealdb-rpc)
+
 ## Example Usage
 
 ```python
