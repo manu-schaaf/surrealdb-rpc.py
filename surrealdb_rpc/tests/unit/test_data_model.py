@@ -1,6 +1,12 @@
 import pytest
 
-from surrealdb_rpc.data_model.record_id import ArrayRecordId, NumericRecordId, ObjectRecordId, RecordId, TextRecordId
+from surrealdb_rpc.data_model.record_id import (
+    ArrayRecordId,
+    NumericRecordId,
+    ObjectRecordId,
+    RecordId,
+    TextRecordId,
+)
 from surrealdb_rpc.data_model.table import Table
 from surrealdb_rpc.data_model.thing import Thing
 
