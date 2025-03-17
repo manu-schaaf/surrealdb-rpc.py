@@ -17,9 +17,9 @@ from surrealdb_rpc.data_model.thing import CannotCreateThingFromObj
 
 LOGGER: Final[logging.Logger] = logging.getLogger(__name__)
 
-_HOST: Final[str] = os.getenv("SURREAL_BIND", "localhost:18000").split(":", 1)[0]
+_HOST: Final[str] = os.getenv("SURREAL_BIND", "127.0.0.1:18000").split(":", 1)[0]
 _PORT: Final[int] = int(
-    os.getenv("SURREAL_BIND", "localhost:18000").split(":", 1)[1] or "18000"
+    os.getenv("SURREAL_BIND", "127.0.0.1:18000").split(":", 1)[-1] or "18000"
 )
 _USER: Final[str] = os.getenv("SURREAL_USER", "root")
 _PASSWORD: Final[str] = os.getenv("SURREAL_PASS", "root")

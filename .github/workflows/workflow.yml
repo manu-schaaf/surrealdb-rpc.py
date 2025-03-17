@@ -12,7 +12,7 @@ on:
     types: [published]
 
 env:
-  SURREAL_BIND: "localhost:8000"
+  SURREAL_BIND: "127.0.0.1:8000"
 
 jobs:
   build:
