@@ -5,13 +5,15 @@ name: Python package
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
+
+env:
+  SURREAL_BIND: "localhost:8000"
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -19,15 +21,21 @@ jobs:
         python-version: ["3.12", "3.13"]
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Python & environment using uv
-      uses: astral-sh/setup-uv@v5.3.1
-      with:
-        python-version: ${{ matrix.python-version }}
-        
-    - name: ruff-action
-      uses: astral-sh/ruff-action@v3.2.2
-      
-    - name: Test with python ${{ matrix.python-version }}
-      run: uv run --frozen pytest --doctest-modules
+      - uses: actions/checkout@v4
+
+      - name: Setup Python & environment using uv
+        uses: astral-sh/setup-uv@v5.3.1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: ruff-action
+        uses: astral-sh/ruff-action@v3.2.2
+
+      - name: Run Unit & DocTests with python ${{ matrix.python-version }}
+        run: uv run --frozen pytest -m "not integration" --doctest-modules
+
+      - name: Start SurrealDB for Integration Tests
+        uses: surrealdb/setup-surreal@v2.0.1
+
+      - name: Run Integration Tests with python ${{ matrix.python-version }}
+        run: uv run --frozen pytest -m "integration"

@@ -47,7 +47,7 @@ class SurrealDB:
         self.password = password
 
         if shutil.which("surreal") is not None:
-            LOGGER.debug("Starting SurrealDB using executable")
+            LOGGER.info("Starting SurrealDB using executable")
             self._cmd = [
                 "surreal",
                 "start",
@@ -61,7 +61,7 @@ class SurrealDB:
                 f"{self.host}:{self.port}",
             ]
         elif (cmd := shutil.which("docker") or shutil.which("podman")) is not None:
-            LOGGER.debug(f"Starting SurrealDB using {cmd}")
+            LOGGER.info(f"Starting SurrealDB using {cmd}")
             self._cmd = [
                 cmd,
                 "run",
@@ -125,22 +125,22 @@ class SurrealDB:
             return True
 
         self.process.terminate()
-
         try:
-            self.process.wait(1)
+            self.process.wait(_SHUTDOWN_TIMEOUT)
         except subprocess.TimeoutExpired:
-            self.process.kill()
+            pass
         else:
             return True
 
+        self.process.kill()
         try:
-            self.process.wait(5)
-        except subprocess.TimeoutExpired as e:
+            self.process.wait(_SHUTDOWN_TIMEOUT)
+        except subprocess.TimeoutExpired:
             msg = f"Failed to terminate & kill SurrealDB with PID {self.process.pid} after timeout started using {self._cmd[0]}"
             if err := self.stderr():
                 err = "  ".join(err.splitlines(True))
                 msg += f", stderr:\n  {err}"
-            raise RuntimeError(msg) from e
+            raise RuntimeError(msg)
 
         return True
 
@@ -173,7 +173,7 @@ def connection():
             )
             db.start()
         else:
-            LOGGER.debug(
+            LOGGER.info(
                 f"Using SurrealDB instance running at {_HOST}:{_PORT} for integration tests"
             )
 
@@ -213,5 +213,6 @@ def _should_skip_test() -> bool:
     _should_skip_test(),
     reason="No integration test DB is running and we cannot start one",
 )
+@pytest.mark.integration
 class TestWebsocketClient(Queries):
     pass

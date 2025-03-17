@@ -34,3 +34,11 @@ dev = [
 
 [tool.uv.workspace]
 members = ["temp"]
+
+[tool.pytest.ini_options]
+log_cli=true
+log_cli_level="info"
+markers = [
+    "integration",
+    "unit",
+]
