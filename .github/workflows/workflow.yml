@@ -38,3 +38,13 @@ jobs:
 
       - name: Run doctests, unit and integration tests with python ${{ matrix.python-version }}
         run: uv run --frozen pytest --doctest-modules
+
+  release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    needs: build
+    environment:
+      name: pypi
+      url: https://pypi.org/p/surrealdb-rpc
+    steps:
+      - uses: pypa/gh-action-pypi-publish@v1.12.4
