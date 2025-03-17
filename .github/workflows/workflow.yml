@@ -37,7 +37,7 @@ jobs:
         uses: surrealdb/setup-surreal@v2.0.1
 
       - name: Run doctests, unit and integration tests with python ${{ matrix.python-version }}
-        run: uv run --frozen pytest --doctest-modules
+        run: uv run --group=ci --frozen pytest --doctest-modules
 
   release:
     runs-on: ubuntu-latest
