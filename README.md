@@ -29,7 +29,7 @@ with SurrealDBWebsocketClient(
 
 This should create this record in the database:
 
-```json
+```js
 {
   array: [
     1,
@@ -41,9 +41,9 @@ This should create this record in the database:
     key: 'value'
   },
   reference: other:{
-  foo: {
-    bar: 'baz'
-  }
+    foo: {
+      bar: 'baz'
+    }
   },
   text: 'Some value'
 }
