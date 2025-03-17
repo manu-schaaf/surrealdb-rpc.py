@@ -32,6 +32,8 @@ jobs:
 
       - name: ruff-action
         uses: astral-sh/ruff-action@v3.2.2
+        with:
+          src: "./surrealdb_rpc"
 
       - name: Start SurrealDB for Integration Tests
         uses: surrealdb/setup-surreal@v2.0.1
