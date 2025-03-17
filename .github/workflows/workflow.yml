@@ -1,13 +1,15 @@
 # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: Python package
+name: Unit & Integration Tests
 
 on:
   push:
     branches: ["master"]
   pull_request:
     branches: ["master"]
+  release:
+    types: [published]
 
 env:
   SURREAL_BIND: "localhost:8000"
@@ -31,11 +33,8 @@ jobs:
       - name: ruff-action
         uses: astral-sh/ruff-action@v3.2.2
 
-      - name: Run Unit & DocTests with python ${{ matrix.python-version }}
-        run: uv run --frozen pytest -m "not integration" --doctest-modules
-
       - name: Start SurrealDB for Integration Tests
         uses: surrealdb/setup-surreal@v2.0.1
 
-      - name: Run Integration Tests with python ${{ matrix.python-version }}
-        run: uv run --frozen pytest -m "integration"
+      - name: Run doctests, unit and integration tests with python ${{ matrix.python-version }}
+        run: uv run --frozen pytest --doctest-modules
