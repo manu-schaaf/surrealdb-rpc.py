@@ -40,28 +40,38 @@ class String(str):
 
     @classmethod
     def auto_quote(cls, s: str, use_backtick=False) -> str:
-        """Automatically quote a string using double quotes
+        """Automatically quote a string using the appropriate quote type.
+        Uses single quotes by default and double quotes if `s` contains a single quote.
+        Double quotes within a double-quoted string are escaped.
+
+        Alternatively, you may set `use_backtick` to `True` to use backticks instead of single or double quotes.
+
+        Note:
+            This method will *NOT* check if the string is already quoted!
 
         Examples:
-            >>> String.auto_quote("simple_string")
-            "'simple_string'"
-            >>> String.auto_quote("complex'string")
-            '"complex\\'string"'
-            >>> String.auto_quote("complex-string", use_backtick=True)
-            '`complex-string`'
+            >>> print(String.auto_quote("simple_string"))
+            'simple_string'
+            >>> print(String.auto_quote("complex'string"))
+            "complex'string"
+            >>> print(String.auto_quote("\\\"complex'string\\\""))
+            "\\\"complex'string\\\""
+            >>> print(String.auto_quote("complex-string", use_backtick=True))
+            `complex-string`
         """
-        return (
-            EscapedString.backtick(s)
-            if use_backtick
-            else (EscapedString.single(s) if "'" not in s else EscapedString.double(s))
-        )
+        if use_backtick:
+            return EscapedString.backtick(s)
+        elif "'" in s:
+            return EscapedString.double(s)
+        else:
+            return EscapedString.single(s)
 
-    @classmethod
-    def _is_simple_char(cls, c: str) -> bool:
+    @staticmethod
+    def _is_simple_char(c: str) -> bool:
         return c.isalnum() or c == "_"
 
-    @classmethod
-    def is_simple(cls, s: str) -> bool:
+    @staticmethod
+    def is_simple(s: str) -> bool:
         return all(map(String._is_simple_char, s))
 
 
@@ -71,10 +81,10 @@ class EscapedString(String):
         """Escape a string using angle brackets.
 
         Examples:
-            >>> EscapedString.angle("simple_string")
-            '⟨simple_string⟩'
-            >>> EscapedString.angle("complex⟨-⟩string")
-            '⟨complex⟨-\\\\⟩string⟩'
+            >>> print(EscapedString.angle("simple_string"))
+            ⟨simple_string⟩
+            >>> print(EscapedString.angle("complex⟨-⟩string"))
+            ⟨complex⟨-\\⟩string⟩
         """
         if isinstance(string, cls):
             warnings.warn(
@@ -87,10 +97,12 @@ class EscapedString(String):
         """Escape a string using backticks.
 
         Examples:
-            >>> EscapedString.backtick("simple_string")
-            '`simple_string`'
-            >>> EscapedString.backtick("complex`-`string")
-            '`complex\\\\`-\\\\`string`'
+            >>> print(EscapedString.backtick("simple_string"))
+            `simple_string`
+            >>> print(EscapedString.backtick('"quoted" string'))
+            `"quoted" string`
+            >>> print(EscapedString.backtick("complex`-`string"))
+            `complex\\`-\\`string`
         """
         if isinstance(string, cls):
             warnings.warn(
@@ -103,10 +115,10 @@ class EscapedString(String):
         """Escape a string using single-qoutes.
 
         Examples:
-            >>> EscapedString.single("simple_string")
-            "'simple_string'"
-            >>> EscapedString.single("complex'-'string")
-            "'complex\\\\'-\\\\'string'"
+            >>> print(EscapedString.single("simple_string"))
+            'simple_string'
+            >>> print(EscapedString.single("complex'-'string"))
+            'complex\\'-\\'string'
         """
         if isinstance(string, cls):
             warnings.warn(
@@ -119,10 +131,10 @@ class EscapedString(String):
         """Escape a string using single-qoutes.
 
         Examples:
-            >>> EscapedString.double('simple_string')
-            '"simple_string"'
-            >>> EscapedString.double('complex"-"string')
-            '"complex\\\\"-\\\\"string"'
+            >>> print(EscapedString.double('simple_string'))
+            "simple_string"
+            >>> print(EscapedString.double('complex"-"string'))
+            "complex\\"-\\"string"
         """
         if isinstance(string, cls):
             warnings.warn(
