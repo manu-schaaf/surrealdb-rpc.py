@@ -1,8 +1,11 @@
+import pytest
+
 from surrealdb_rpc.data_model.record_id import RecordId
 from surrealdb_rpc.data_model.table import Table
 from surrealdb_rpc.data_model.thing import Thing
 
 
+@pytest.mark.unit
 class TestThing:
     def test_text(self):
         assert Thing("test", "foo").__surql__() == "test:foo"
@@ -34,6 +37,8 @@ class TestThing:
         assert Thing("test", 42) == Thing.parse("test:42")
 
 
+
+@pytest.mark.unit
 class TestRecordId:
     def test_text(self):
         assert RecordId("foo").__surql__() == "foo"
@@ -82,6 +87,7 @@ class TestRecordId:
         assert RecordId.from_surql("{ foo: 'bar' }").__surql__() == "{ foo: 'bar' }"
 
 
+@pytest.mark.unit
 class TestTable:
     def test_simple(self):
         table = Table("test")
