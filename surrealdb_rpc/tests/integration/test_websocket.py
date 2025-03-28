@@ -608,3 +608,7 @@ class TestWebsocketClient:
         assert all(
             int(r["id"].record_id.value) % 2 == int(r["odd"]) for r in response
         ), response
+        
+        response = connection.update("test_update:5", odd=False)
+        assert response == None
+        
