@@ -90,7 +90,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
 
         return result
 
-    def recv_one(self) -> dict:
+    def recv_one(self,empty_response_is_error) -> dict:
         """Receive a single result dictionary from the websocket connection
 
         Raises:
@@ -99,9 +99,9 @@ class SurrealDBWebsocketClient(WebsocketClient):
         Returns:
             SurrealDBResult: A single result dictionary
         """
-        result = self.recv()
+        result = self.recv(empty_response_is_error=empty_response_is_error)
 
-        if not isinstance(result, dict):
+        if not isinstance(result, dict) or (not result and empty_response_is_error):
             raise InvalidResultType(dict, result)
 
         return result
@@ -189,6 +189,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         self,
         thing: SingleTable | SingleThing,
         data: dict | None = None,
+        empty_response_is_error: bool = False,
         **kwargs,
     ) -> dict:
         """Create a single record with a random or specified ID in the given table.
@@ -204,19 +205,20 @@ class SurrealDBWebsocketClient(WebsocketClient):
         data = data | kwargs if data else kwargs
 
         self.send("create", [thing_or_table, data])
-        return self.recv_one()
+        return self.recv_one(empty_response_is_error=empty_response_is_error)
 
     def insert(
         self,
         table: SingleTable,
         data: dict | list[dict] | None = None,
+        empty_response_is_error: bool = True,
     ) -> list[dict]:
         """Insert one or multiple records in a table."""
         data = data if data is not None else {}
         data = data if isinstance(data, list) else [data]
 
         self.send("insert", [table, data])
-        return self.recv()  # type: ignore
+        return self.recv(empty_response_is_error=empty_response_is_error)  # type: ignore
 
     InsertRelation = TypedDict(
         "InsertRelation",
@@ -231,6 +233,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         self,
         table: SingleTable,
         data: InsertRelation | list[InsertRelation],
+        empty_response_is_error: bool = True,
         **kwargs,
     ) -> dict | list[dict]:
         """Insert a new relation record into a specified table or infer the table from the data.
@@ -257,12 +260,13 @@ class SurrealDBWebsocketClient(WebsocketClient):
             raise ValueError("Data must be a dictionary or a list of dictionaries")
 
         self.send("insert_relation", [Table(table), data])
-        return self.recv()  # type: ignore
+        return self.recv(empty_response_is_error=empty_response_is_error)  # type: ignore
 
     def update(
         self,
         thing: SingleTable | OneOrManyThings,
         data: dict | None = None,
+        empty_response_is_error: bool = False,
         **kwargs,
     ) -> dict | list[dict]:
         """Modify either all records in a table or a single record with specified data if the record already exists"""
@@ -273,12 +277,13 @@ class SurrealDBWebsocketClient(WebsocketClient):
         else:
             self.send("update", [Thing.from_obj_maybe_table(thing), data])
 
-        return self.recv()  # type: ignore
+        return self.recv(empty_response_is_error=empty_response_is_error)  # type: ignore
 
     def upsert(
         self,
         thing: SingleTable | OneOrManyThings,
         data: dict | None = None,
+        empty_response_is_error: bool = False,
         **kwargs,
     ) -> dict | list[dict]:
         """Replace either all records in a table or a single record with specified data"""
@@ -288,7 +293,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         else:
             self.send("upsert", [Thing.from_obj_maybe_table(thing), data])
 
-        return self.recv()  # type: ignore
+        return self.recv(empty_response_is_error=empty_response_is_error)  # type: ignore
 
     def relate(
         self,
@@ -296,6 +301,7 @@ class SurrealDBWebsocketClient(WebsocketClient):
         relation: str | Table,
         record_out: SingleTable | OneOrManyThings,
         data: dict | None = None,
+        empty_response_is_error: bool = False,
         **kwargs,
     ) -> dict | list[dict]:
         """Create graph relationships between created records"""
@@ -312,12 +318,13 @@ class SurrealDBWebsocketClient(WebsocketClient):
         data = data | kwargs if data else kwargs
 
         self.send("relate", [things_in, Table(relation), things_out, data])
-        return self.recv()  # type: ignore
+        return self.recv(empty_response_is_error=empty_response_is_error)  # type: ignore
 
     def merge(
         self,
         thing: SingleTable | OneOrManyThings,
         data: dict | None = None,
+        empty_response_is_error: bool = True,
         **kwargs,
     ) -> dict | list[dict]:
         """Merge specified data into either all records in a table or a single record"""
@@ -328,13 +335,14 @@ class SurrealDBWebsocketClient(WebsocketClient):
             thing = Thing.from_obj_maybe_table(thing)
 
         self.send("merge", [thing, data])
-        return self.recv()  # type: ignore
+        return self.recv(empty_response_is_error=empty_response_is_error)  # type: ignore
 
     def patch(
         self,
         thing: SingleTable | OneOrManyThings,
         patches: list[dict],
         diff: bool = False,
+        empty_response_is_error: bool = False,
     ) -> dict | list[dict]:
         """Patch either all records in a table or a single record with specified patches"""
         if isinstance(thing, list):
@@ -342,11 +350,12 @@ class SurrealDBWebsocketClient(WebsocketClient):
         else:
             self.send("patch", [Thing.from_obj_maybe_table(thing), patches, diff])
 
-        return self.recv()  # type: ignore
+        return self.recv(empty_response_is_error=empty_response_is_error)  # type: ignore
 
     def delete(
         self,
         thing: SingleTable | OneOrManyThings,
+        empty_response_is_error: bool = False,
     ) -> dict | list[dict]:
         """Delete either all records in a table or a single record"""
         if isinstance(thing, list):
@@ -354,4 +363,4 @@ class SurrealDBWebsocketClient(WebsocketClient):
         else:
             self.send("delete", [Thing.from_obj_maybe_table(thing)])
 
-        return self.recv()  # type: ignore
+        return self.recv(empty_response_is_error=empty_response_is_error)  # type: ignore
